@@ -1,0 +1,1764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<title>Hotel Billing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style id="pageStyle"></style>
+<style>
+:root{
+  --bg:#f4f6fa;--surface:#fff;--surface2:#f8fafc;--border:#e6e9f0;--text:#0f172a;--text2:#334155;--muted:#64748b;--faint:#94a3b8;
+  --soft:#f1f5f9;--seg:#eef1f6;--line2:#cbd5e1;--topbar:rgba(255,255,255,.92);--ink:#0f172a;--ink-fg:#fff;
+  --primary:#ea580c;--primary-600:#c2410c;--primary-50:#fff4ec;--primary-200:#fdba74;
+  --side:#0f172a;--side2:#1e293b;
+  --green:#16a34a;--green-50:#ecfdf3;--red:#dc2626;--red-50:#fef2f2;--amber:#d97706;--amber-50:#fffbeb;--blue:#2563eb;--blue-50:#eff6ff;--violet:#7c3aed;--violet-50:#f5f3ff;
+  --radius:14px;--shadow:0 1px 2px rgba(15,23,42,.04),0 6px 20px rgba(15,23,42,.06);
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0b1120;--surface:#111827;--surface2:#0f172a;--border:#1f2a3b;--text:#e5e7eb;--text2:#cbd5e1;--muted:#94a3b8;--faint:#64748b;
+  --soft:#1e293b;--seg:#1e293b;--line2:#334155;--topbar:rgba(17,24,39,.9);--ink:#f1f5f9;--ink-fg:#0f172a;
+  --primary-50:rgba(234,88,12,.15);--primary-200:#9a3412;--side:#070b14;--side2:#111827;
+  --green-50:rgba(22,163,74,.16);--red-50:rgba(220,38,38,.16);--amber-50:rgba(217,119,6,.16);--blue-50:rgba(37,99,235,.18);--violet-50:rgba(124,58,237,.2);
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);font-size:14px;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.5}
+input,select,textarea{font:inherit;color:inherit}
+a{color:var(--primary);cursor:pointer;text-decoration:none;font-weight:500}
+.hidden{display:none!important}
+.ic{flex-shrink:0;display:block}
+.muted{color:var(--muted)}
+.r{text-align:right}
+kbd{font-family:inherit;font-size:10.5px;background:var(--soft);border:1px solid var(--border);border-radius:5px;padding:1px 5px;color:var(--muted)}
+
+/* ---------- Buttons / inputs ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:10px;font-weight:600;font-size:13.5px;white-space:nowrap;transition:.15s;border:1px solid transparent}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 4px 12px rgba(234,88,12,.25)}
+.btn-primary:hover:not(:disabled){background:var(--primary-600)}
+.btn-dark{background:var(--ink);color:var(--ink-fg)}
+.btn-ghost{background:var(--surface);border-color:var(--border);color:var(--text2)}
+.btn-ghost:hover:not(:disabled){background:var(--surface2);border-color:var(--line2)}
+.btn-soft{background:var(--primary-50);color:var(--primary-600);border-color:var(--primary-200)}
+.btn-green{background:#25d366;color:#fff}
+.btn-danger{background:var(--red);color:#fff}
+.btn-sm{height:32px;padding:0 12px;font-size:12.5px;border-radius:8px}
+.grow{flex:1}
+.icon-btn{width:36px;height:36px;display:inline-grid;place-items:center;border-radius:10px;color:var(--muted);transition:.15s}
+.icon-btn:hover{background:var(--soft);color:var(--text)}
+.icon-btn.sm{width:30px;height:30px;border-radius:8px}
+.icon-btn.danger:hover{background:var(--red-50);color:var(--red)}
+.input{width:100%;height:40px;border:1px solid var(--border);border-radius:10px;padding:0 12px;background:var(--surface);outline:0;transition:.15s}
+textarea.input{height:auto;padding:10px 12px;resize:vertical}
+.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(234,88,12,.12)}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:12.5px;font-weight:600;color:var(--text2)}
+.field small{color:var(--faint);font-size:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0 14px}
+.check{display:flex;align-items:center;gap:10px;font-weight:500;cursor:pointer;user-select:none;margin-bottom:10px}
+.check input{width:18px;height:18px;accent-color:var(--primary);flex-shrink:0}
+.switch{position:relative;width:40px;height:22px;flex-shrink:0;display:inline-block}
+.switch input{opacity:0;width:0;height:0}
+.switch span{position:absolute;inset:0;background:var(--line2);border-radius:20px;transition:.2s;cursor:pointer}
+.switch span::after{content:'';position:absolute;left:3px;top:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch input:checked+span{background:var(--green)}
+.switch input:checked+span::after{transform:translateX(18px)}
+
+.seg{display:flex;background:var(--seg);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;padding:7px 8px;border-radius:8px;font-weight:500;color:var(--muted);font-size:13px;white-space:nowrap}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.1);font-weight:600}
+.seg.pay button.on{background:var(--ink);color:var(--ink-fg)}
+
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--muted);white-space:nowrap}
+.badge.green{background:var(--green-50);color:var(--green)}
+.badge.red{background:var(--red-50);color:var(--red)}
+.badge.amber{background:var(--amber-50);color:var(--amber)}
+.badge.blue{background:var(--blue-50);color:var(--blue)}
+.badge.violet{background:var(--violet-50);color:var(--violet)}
+.badge.orange{background:var(--primary-50);color:var(--primary)}
+
+/* ---------- Layout ---------- */
+.sidebar{width:252px;background:var(--side);display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:70;transition:transform .25s ease}
+.brand{display:flex;align-items:center;gap:12px;padding:22px 20px 16px}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#fb923c,#ea580c);display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;box-shadow:0 6px 16px rgba(234,88,12,.35);flex-shrink:0}
+.brand b{display:block;color:#fff;font-size:15px;line-height:1.25;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand small{color:#64748b;font-size:12px}
+.nav{flex:1;padding:4px 12px;overflow-y:auto}
+.nav-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:#475569;padding:14px 12px 8px;font-weight:700}
+.nav a{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:10px;color:#94a3b8;font-weight:500;margin-bottom:2px;transition:.15s}
+.nav a:hover{background:rgba(255,255,255,.05);color:#e2e8f0}
+.nav a.active{background:rgba(234,88,12,.16);color:#fff}
+.nav a.active .ic{color:#fb923c}
+.nav a .nb{margin-left:auto;background:var(--red);color:#fff;font-size:11px;font-weight:700;border-radius:20px;padding:1px 7px}
+.nav a .nb.o{background:var(--primary)}
+.side-user{margin:12px;padding:12px;border-radius:12px;background:var(--side2);display:flex;align-items:center;gap:10px}
+.avatar{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:700;color:#fff;flex-shrink:0;font-size:14px}
+.side-user b{color:#fff;font-size:13px;display:block}
+.side-user small{color:#94a3b8;font-size:12px}
+.side-user button{margin-left:auto;color:#94a3b8;padding:8px;border-radius:8px}
+.side-user button:hover{background:rgba(255,255,255,.08);color:#fff}
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:65;display:none}
+.overlay.show{display:block}
+
+.main{margin-left:252px;min-width:0;display:flex;flex-direction:column;min-height:100vh}
+.topbar{height:64px;background:var(--topbar);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 24px;position:sticky;top:0;z-index:40}
+.topbar h1{font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.pill{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:13px;background:var(--surface2);border:1px solid var(--border);padding:7px 12px;border-radius:10px;white-space:nowrap}
+.hamb{display:none}
+.view{padding:24px;flex:1}
+.view.flush{padding:0}
+
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.page-head h2{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.page-head p{color:var(--muted);margin-top:4px}
+.page-head .actions{display:flex;gap:10px;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+.card.p0{padding:0;overflow:hidden}
+.card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:10px}
+.card-h h3{font-size:15px;font-weight:700}
+.card-h .muted{font-size:12.5px}
+.section-t{font-size:15px;font-weight:700;margin:24px 0 12px;display:flex;align-items:center;gap:8px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:20px}
+.kpi{display:flex;gap:14px;align-items:flex-start}
+.kpi-ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;flex-shrink:0}
+.kpi-ic.orange{background:var(--primary-50);color:var(--primary)}
+.kpi-ic.blue{background:var(--blue-50);color:var(--blue)}
+.kpi-ic.green{background:var(--green-50);color:var(--green)}
+.kpi-ic.red{background:var(--red-50);color:var(--red)}
+.kpi-ic.violet{background:var(--violet-50);color:var(--violet)}
+.kpi-ic.amber{background:var(--amber-50);color:var(--amber)}
+.kpi-ic.slate{background:var(--soft);color:var(--muted)}
+.kpi span{color:var(--muted);font-size:12.5px;font-weight:500}
+.kpi b{display:block;font-size:24px;font-weight:800;letter-spacing:-.02em;margin:2px 0 4px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kpi small{font-size:12px;color:var(--faint)}
+.kpi small.up{color:var(--green);font-weight:600}
+.kpi small.down{color:var(--red);font-weight:600}
+
+.dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.span2{grid-column:span 2}
+.bars{display:flex;gap:12px;height:230px;align-items:stretch}
+.bars.sm{gap:4px;height:180px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;min-width:0}
+.bar-track{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center}
+.bar{width:100%;max-width:46px;border-radius:8px 8px 4px 4px;background:var(--primary-200);transition:height .5s;min-height:4px}
+.bars.sm .bar{border-radius:5px 5px 2px 2px;background:#a78bfa}
+.bars.sm .bar.peak{background:var(--violet)}
+.bar-col.today .bar{background:linear-gradient(180deg,#fb923c,#ea580c)}
+.bar-v{font-size:11.5px;font-weight:600;color:var(--muted);height:16px;white-space:nowrap}
+.bar-l{font-size:12px;color:var(--muted);white-space:nowrap}
+.bars.sm .bar-l{font-size:10px}
+.bar-col.today .bar-l{color:var(--text);font-weight:700}
+.prog{height:8px;background:var(--soft);border-radius:8px;overflow:hidden;margin-top:6px}
+.prog i{display:block;height:100%;border-radius:8px}
+.list-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--soft)}
+.list-row:last-child{border-bottom:0}
+.list-row .grow{min-width:0}
+.list-row b{font-size:13.5px}
+.list-row small{display:block;color:var(--muted);font-size:12px}
+.rank{width:28px;height:28px;border-radius:8px;background:var(--soft);display:grid;place-items:center;font-weight:700;font-size:12px;color:var(--muted);flex-shrink:0}
+.mini-thumb{width:40px;height:40px;border-radius:10px;overflow:hidden;flex-shrink:0}
+.mini-thumb img,.mini-thumb .ph{width:100%;height:100%;object-fit:cover;font-size:20px}
+.empty{text-align:center;padding:36px 16px;color:var(--faint)}
+.empty .ic{margin:0 auto 10px;color:var(--line2)}
+.empty p{color:var(--muted);font-weight:600}
+
+/* ---------- Tables ---------- */
+.table-wrap{overflow-x:auto}
+.table{width:100%;border-collapse:collapse;min-width:640px}
+.table th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600;padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border);white-space:nowrap}
+.table td{padding:12px 16px;border-bottom:1px solid var(--soft);vertical-align:middle}
+.table tr:last-child td{border-bottom:0}
+.table tbody tr:hover{background:var(--surface2)}
+.table tr.cancel td{color:var(--faint)}
+.table tr.cancel td b{text-decoration:line-through}
+.table .acts{display:flex;gap:2px;justify-content:flex-end;align-items:center}
+.table .r{text-align:right}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px;overflow-x:auto}
+.tabs button{padding:10px 16px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs button.on{color:var(--primary);border-color:var(--primary)}
+.toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.toolbar .search{flex:1;min-width:200px}
+.toolbar select.input{width:auto;min-width:160px}
+
+/* ---------- POS ---------- */
+.pos{display:grid;grid-template-columns:1fr 410px;height:calc(100vh - 64px)}
+.pos-main{display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.pos-top{padding:18px 24px 0;background:var(--bg)}
+.pos-bar{display:flex;gap:10px}
+.pos-bar .search{flex:1}
+.search{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:0 14px;height:44px;color:var(--faint);transition:.15s}
+.search input{border:0;outline:0;flex:1;background:none;height:100%;color:var(--text);min-width:0}
+.search:focus-within{border-color:var(--primary);box-shadow:0 0 0 3px rgba(234,88,12,.12)}
+.run-btn{height:44px;border-radius:12px;background:var(--surface);border:1px solid var(--border);padding:0 14px;display:flex;align-items:center;gap:8px;font-weight:600;white-space:nowrap}
+.run-btn em{font-style:normal;background:var(--primary);color:#fff;border-radius:20px;font-size:11px;padding:1px 7px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:14px 0;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{display:flex;align-items:center;gap:6px;white-space:nowrap;padding:8px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--border);font-weight:500;color:var(--text2);transition:.15s}
+.chip:hover{border-color:var(--line2)}
+.chip em{font-style:normal;font-size:11px;background:var(--soft);border-radius:999px;padding:1px 7px;color:var(--muted)}
+.chip.on{background:var(--ink);color:var(--ink-fg);border-color:var(--ink)}
+.chip.on em{background:rgba(127,127,127,.25);color:inherit}
+.chip.sm{padding:6px 12px;font-size:12.5px}
+.food-grid{flex:1;overflow-y:auto;padding:2px 24px 24px;display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:14px;align-content:start}
+.food{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;text-align:left;display:flex;flex-direction:column;transition:transform .12s,box-shadow .15s,border-color .15s;position:relative}
+.food:hover{border-color:var(--primary-200);box-shadow:var(--shadow);transform:translateY(-2px)}
+.food:active{transform:scale(.97)}
+.food.incart{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+.food-img{position:relative;aspect-ratio:4/3;background:var(--surface2);overflow:hidden}
+.food-img img{width:100%;height:100%;object-fit:cover;display:block}
+.ph{width:100%;height:100%;display:grid;place-items:center;font-size:40px;background:linear-gradient(135deg,hsl(var(--h) 85% 95%),hsl(var(--h) 70% 86%))}
+[data-theme="dark"] .ph{background:linear-gradient(135deg,hsl(var(--h) 30% 22%),hsl(var(--h) 35% 16%))}
+.qbadge{position:absolute;top:8px;right:8px;background:var(--primary);color:#fff;min-width:26px;height:26px;border-radius:13px;display:grid;place-items:center;font-weight:700;font-size:13px;padding:0 7px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.code{position:absolute;top:8px;left:8px;background:rgba(15,23,42,.7);color:#fff;font-size:10.5px;font-weight:700;border-radius:6px;padding:2px 6px;letter-spacing:.03em}
+.soldout{position:absolute;inset:0;background:rgba(15,23,42,.55);color:#fff;display:grid;place-items:center;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:12px}
+.food.out{opacity:.75;cursor:not-allowed}
+.food.out:hover{transform:none;box-shadow:none;border-color:var(--border)}
+.food-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;flex:1}
+.food-name{font-weight:600;font-size:13.5px;line-height:1.3;display:flex;gap:6px;align-items:flex-start}
+.food-foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto}
+.food-foot b{font-size:15px;font-variant-numeric:tabular-nums}
+.food-foot small{font-size:11px;color:var(--muted)}
+.warn{color:var(--amber)!important;font-weight:600}
+.vd{width:13px;height:13px;border:1.5px solid var(--green);border-radius:3px;display:inline-grid;place-items:center;flex-shrink:0;margin-top:2px}
+.vd::after{content:'';width:5px;height:5px;border-radius:50%;background:var(--green)}
+.vd.nv{border-color:#dc2626}
+.vd.nv::after{background:#dc2626}
+
+.cart{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;min-height:0;overflow-y:auto}
+.cart-head{display:flex;align-items:flex-start;justify-content:space-between;padding:16px 20px 10px;gap:8px}
+.cart-head h3{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cart-head small{color:var(--muted);font-size:12.5px}
+.cart-meta{padding:0 20px 12px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.meta-grid .input{height:36px;font-size:13px}
+.meta-grid .full{grid-column:1/-1}
+.cust-hint{font-size:12px;color:var(--green);font-weight:600}
+.cust-hint:empty{display:none}
+.cart-lines{flex:1 0 auto;padding:4px 20px;min-height:120px}
+.line{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px dashed var(--border)}
+.line-info{flex:1;min-width:0}
+.line-name{font-weight:600;font-size:13.5px;display:flex;gap:6px;align-items:flex-start}
+.line-name span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.line-sub{margin-left:19px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:2px}
+.line-sub small{color:var(--muted);font-size:12px}
+.line-sub a{font-size:11.5px}
+.line-note{font-size:11.5px;color:var(--amber);font-weight:600}
+.kt{font-size:10.5px;font-weight:700;border-radius:5px;padding:1px 5px;background:var(--green-50);color:var(--green)}
+.kt.new{background:var(--amber-50);color:var(--amber)}
+.qty{display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border);border-radius:10px}
+.qty button{width:30px;height:30px;display:grid;place-items:center;color:var(--muted);border-radius:9px}
+.qty button:hover{color:var(--primary);background:var(--primary-50)}
+.qty span{min-width:22px;text-align:center;font-weight:700;font-size:13px}
+.line-amt{width:72px;text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.empty-cart{text-align:center;padding:36px 10px;color:var(--faint)}
+.empty-cart .ic{margin:0 auto 10px;color:var(--line2)}
+.empty-cart p{font-weight:600;color:var(--muted)}
+.cart-foot{border-top:1px solid var(--border);padding:14px 20px 18px;background:var(--surface2);display:flex;flex-direction:column;gap:10px}
+.disc{display:flex;align-items:center;gap:10px}
+.disc label{font-size:13px;font-weight:600;color:var(--text2);flex:1}
+.disc .input{width:90px;height:34px}
+.disc .seg{width:84px}
+.disc .seg button{padding:5px}
+.sum-row{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;padding:1px 0;font-variant-numeric:tabular-nums}
+.sum-row.dis{color:var(--green)}
+.sum-total{display:flex;justify-content:space-between;align-items:center;font-size:22px;font-weight:800;padding-top:8px;margin-top:4px;border-top:1px dashed var(--line2);letter-spacing:-.02em}
+.sum-total span{font-size:14px;font-weight:600;color:var(--muted);letter-spacing:0}
+.paybox{display:flex;gap:8px;align-items:center}
+.paybox .input{height:34px;font-size:13px}
+.paybox label{font-size:12px;color:var(--muted);white-space:nowrap}
+.chg{font-weight:700;white-space:nowrap;font-size:13px}
+.split{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.split label{font-size:11px;color:var(--muted);display:block;margin-bottom:3px}
+.split .input{height:34px;font-size:13px}
+.cart-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.cart-actions .btn{height:42px;padding:0 8px}
+.cart-actions .main-act{grid-column:1/-1;height:48px;font-size:15px}
+.cart-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:55;display:none}
+.cart-fab{display:none;position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:50;background:var(--ink);color:var(--ink-fg);border-radius:16px;padding:12px 16px;align-items:center;gap:12px;font-weight:600;box-shadow:0 12px 30px rgba(15,23,42,.35)}
+.cart-fab .cnt{background:var(--primary);color:#fff;border-radius:10px;min-width:34px;height:34px;display:grid;place-items:center;font-weight:800}
+.cart-fab .tot{margin-left:auto;font-size:17px;font-weight:800}
+.bump{animation:bump .3s}
+@keyframes bump{50%{transform:scale(1.04)}}
+.only-m{display:none!important}
+
+/* ---------- Tables (restaurant) ---------- */
+.tables{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.tcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:left;display:flex;flex-direction:column;gap:4px;min-height:132px;transition:.15s;position:relative;box-shadow:var(--shadow)}
+.tcard:hover{transform:translateY(-2px);border-color:var(--primary)}
+.tcard .tn{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.tcard .dot{position:absolute;top:18px;right:16px;width:10px;height:10px;border-radius:50%;background:var(--green)}
+.tcard.busy{background:linear-gradient(160deg,var(--primary-50),var(--surface) 70%);border-color:var(--primary-200)}
+.tcard.busy .dot{background:var(--primary);box-shadow:0 0 0 4px rgba(234,88,12,.2)}
+.tcard .amt{font-size:18px;font-weight:800;margin-top:auto}
+.tcard small{color:var(--muted);font-size:12px}
+.legend{display:flex;gap:16px;font-size:12.5px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+
+/* ---------- Menu mgmt ---------- */
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.mcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+.mcard .food-img{aspect-ratio:16/10}
+.mcard-b{padding:12px 14px}
+.mcard-b .t{display:flex;gap:6px;font-weight:700;align-items:flex-start}
+.mcard-b .meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:6px}
+.mcard-b .meta b{font-size:16px}
+.mcard-f{display:flex;align-items:center;gap:6px;padding:10px 14px;border-top:1px solid var(--soft)}
+.mcard-f .lbl{font-size:12px;color:var(--muted);margin-right:auto;display:flex;align-items:center;gap:8px;cursor:pointer}
+.mcard.off{opacity:.6}
+.img-pick{border:2px dashed var(--line2);border-radius:14px;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);cursor:pointer;overflow:hidden;background:var(--surface2);margin-bottom:8px;transition:.15s}
+.img-pick:hover{border-color:var(--primary);color:var(--primary)}
+.img-pick img{width:100%;height:100%;object-fit:cover}
+.img-pick small{color:var(--faint)}
+.emoji-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.emoji-row button{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);font-size:20px;background:var(--surface)}
+.emoji-row button.on{border-color:var(--primary);background:var(--primary-50)}
+.tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+
+/* ---------- Staff ---------- */
+.staff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.scard{display:flex;gap:12px;align-items:center}
+.scard .avatar{width:46px;height:46px;border-radius:14px;font-size:17px}
+.scard b{display:block}
+.scard small{color:var(--muted);font-size:12px}
+.perm-table td:not(:first-child),.perm-table th:not(:first-child){text-align:center}
+.perm-table input{width:18px;height:18px;accent-color:var(--primary)}
+
+/* ---------- Modal / toast ---------- */
+.modal-wrap{position:fixed;inset:0;background:rgba(15,23,42,.55);backdrop-filter:blur(3px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;animation:fade .15s}
+.modal{background:var(--surface);border-radius:18px;width:100%;max-width:540px;max-height:92vh;display:flex;flex-direction:column;box-shadow:0 25px 60px rgba(0,0,0,.25);animation:pop .2s}
+.modal.sm{max-width:420px}
+.modal-h{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border)}
+.modal-h h3{font-size:16px;font-weight:700}
+.modal-b{padding:20px 22px;overflow-y:auto}
+.modal-f{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+@keyframes fade{from{opacity:0}}
+@keyframes pop{from{transform:translateY(12px) scale(.98);opacity:0}}
+.toasts{position:fixed;top:16px;right:16px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:#0f172a;color:#fff;padding:12px 16px;border-radius:12px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.2);display:flex;align-items:center;gap:10px;animation:pop .2s;max-width:380px}
+.toast.ok{background:#065f46}
+.toast.err{background:#991b1b}
+.qr-box{text-align:center}
+.qr-box img{width:240px;height:240px;margin:0 auto;display:block;background:#fff;padding:10px;border-radius:12px;border:1px solid var(--border)}
+.qr-box b{display:block;font-size:30px;margin-top:14px;letter-spacing:-.02em}
+
+/* ---------- Login ---------- */
+.login{min-height:100vh;display:grid;grid-template-columns:1.1fr 1fr}
+.login-art{background:radial-gradient(circle at 20% 20%,rgba(234,88,12,.35),transparent 45%),radial-gradient(circle at 80% 90%,rgba(251,146,60,.2),transparent 40%),#0f172a;color:#fff;padding:48px;display:flex;flex-direction:column;justify-content:space-between}
+.login-art h2{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1.1;max-width:460px}
+.login-art p{color:#94a3b8;margin-top:14px;font-size:15px;max-width:440px;line-height:1.6}
+.feat{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:480px}
+.feat div{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;font-size:13px;color:#cbd5e1;display:flex;gap:10px;align-items:center}
+.feat .ic{color:#fb923c}
+.login-form{display:flex;align-items:center;justify-content:center;padding:24px}
+.login-card{width:100%;max-width:390px}
+.login-card h3{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.staff-pick{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 8px;margin-top:20px}
+.sp{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border-radius:14px;border:2px solid var(--border);min-width:88px;background:var(--surface);transition:.15s}
+.sp.on{border-color:var(--primary);background:var(--primary-50)}
+.sp b{font-size:12.5px;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp small{font-size:11px;color:var(--muted)}
+.pin-dots{display:flex;gap:16px;justify-content:center;margin:24px 0}
+.pin-dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--line2);transition:.15s}
+.pin-dots i.f{background:var(--primary);border-color:var(--primary)}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.keypad button{height:60px;border-radius:14px;background:var(--surface);border:1px solid var(--border);font-size:22px;font-weight:600;transition:.1s;display:grid;place-items:center}
+.keypad button:active{background:var(--primary-50);transform:scale(.96)}
+.login-m-brand{display:none;align-items:center;gap:12px;margin-bottom:24px}
+
+/* ---------- Receipt ---------- */
+#printArea{position:fixed;left:-10000px;top:0;background:#fff}
+.rc{padding:3mm 3mm 8mm;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:#000;line-height:1.35;background:#fff}
+.rc .c{text-align:center}
+.rc .h1{font-size:17px;font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.rc .hr{border-top:1px dashed #000;margin:5px 0}
+.rc .rw{display:flex;justify-content:space-between;gap:6px}
+.rc table{width:100%;border-collapse:collapse}
+.rc th{font-weight:700;border-bottom:1px dashed #000;padding:2px 0;text-align:left;font-size:11.5px;color:#000}
+.rc td{padding:2px 0;vertical-align:top;color:#000}
+.rc .n{text-align:right;white-space:nowrap}
+.rc .tot{font-size:16px;font-weight:800}
+.rc .big{font-size:15px;font-weight:700}
+.rc .kot td{font-size:14px;font-weight:700;padding:3px 0}
+.rc .note{font-size:11px;font-style:italic;font-weight:400}
+.rc .sec{font-weight:700;margin-top:4px;text-transform:uppercase;font-size:11.5px}
+.rc img.qr{width:30mm;height:30mm;display:block;margin:4px auto}
+.rc-preview{width:302px;margin:0 auto;box-shadow:0 4px 20px rgba(0,0,0,.12);border:1px solid var(--border)}
+
+@media print{
+  body{background:#fff}
+  body>*:not(#printArea){display:none!important}
+  #printArea{position:static;left:0}
+}
+
+/* ---------- Responsive ---------- */
+@media(max-width:1200px){.pos{grid-template-columns:1fr 370px}}
+@media(max-width:1024px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:none;box-shadow:20px 0 60px rgba(0,0,0,.3)}
+  .main{margin-left:0}
+  .hamb{display:inline-grid}
+  .dash-grid{grid-template-columns:1fr 1fr}
+  .span2{grid-column:1/-1}
+  .pos{grid-template-columns:1fr;height:auto;min-height:calc(100vh - 64px)}
+  .pos-main{overflow:visible}
+  .pos-top{position:sticky;top:64px;z-index:20;padding:12px 16px 0}
+  .chips{padding:12px 0}
+  .food-grid{overflow:visible;padding:4px 16px 110px;gap:12px}
+  .cart{position:fixed;left:0;right:0;bottom:0;height:92vh;height:92dvh;border-radius:22px 22px 0 0;z-index:60;transform:translateY(105%);transition:transform .3s ease;border:0;box-shadow:0 -10px 40px rgba(0,0,0,.25)}
+  .cart.open{transform:none}
+  .cart.open~.cart-backdrop{display:block}
+  .cart-fab.show{display:flex}
+  .only-m{display:inline-grid!important}
+  .cart-foot{padding-bottom:calc(18px + env(safe-area-inset-bottom))}
+}
+@media(max-width:860px){
+  .login{grid-template-columns:1fr}
+  .login-art{display:none}
+  .login-m-brand{display:flex}
+}
+@media(max-width:640px){
+  .view{padding:16px}
+  .topbar{padding:0 10px;gap:6px}
+  .topbar h1{font-size:16px}
+  .pill.clock,.pill.who,.fs-btn{display:none}
+  .kpis{grid-template-columns:1fr 1fr;gap:10px}
+  .kpi{flex-direction:column;gap:10px}
+  .kpi b{font-size:19px}
+  .card{padding:16px}
+  .dash-grid{grid-template-columns:1fr}
+  .food-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .food-body{padding:8px 10px 10px}
+  .food-name{font-size:13px}
+  .grid2,.grid3{grid-template-columns:1fr}
+  .modal-wrap{align-items:flex-end;padding:0}
+  .modal{border-radius:22px 22px 0 0;max-height:94vh}
+  .modal-f{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+  .page-head h2{font-size:19px}
+  .toasts{left:16px;right:16px;top:auto;bottom:90px}
+  .toast{max-width:none}
+  .bars{gap:6px;height:200px}
+  .bar-v{font-size:10px}
+  .bars.sm .bar-v{display:none}
+  .menu-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .mcard-b{padding:10px}
+  .mcard-b .meta{flex-direction:column;align-items:flex-start}
+  .mcard-f{padding:8px 10px}
+  .staff-grid{grid-template-columns:1fr}
+  .toolbar select.input{flex:1}
+  .tables{grid-template-columns:repeat(2,1fr);gap:10px}
+  .run-btn span{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="loginView"></div>
+
+<div id="appView" class="hidden">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div class="logo" id="brandLogo">H</div><div style="min-width:0"><b id="brandName">Hotel</b><small>Billing &amp; POS</small></div></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-user" id="sideUser"></div>
+  </aside>
+  <div class="overlay" id="overlay" onclick="toggleSide(false)"></div>
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn hamb" id="hambBtn" onclick="toggleSide(true)" aria-label="Menu"></button>
+      <h1 id="pageTitle">Dashboard</h1>
+      <div class="top-right">
+        <div class="pill clock" id="clock"></div>
+        <button class="icon-btn fs-btn" id="fsBtn" title="Full screen" onclick="toggleFS()"></button>
+        <button class="icon-btn" id="themeBtn" title="Light / Dark mode" onclick="toggleTheme()"></button>
+        <div class="pill who" id="topUser"></div>
+      </div>
+    </header>
+    <main class="view" id="view"></main>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+<div class="toasts" id="toasts"></div>
+<div id="printArea"></div>
+
+<script>
+/* =========================================================
+   Icons
+========================================================= */
+const ICONS={
+ dash:'<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>',
+ cart:'<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>',
+ receipt:'<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M8 7h8M8 11h8M8 15h5"/>',
+ menu:'<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>',
+ box:'<path d="M21 8 12 3 3 8v8l9 5 9-5V8Z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+ users:'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+ gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>',
+ logout:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>',
+ hamb:'<path d="M3 6h18M3 12h18M3 18h18"/>',
+ search:'<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ minus:'<path d="M5 12h14"/>',
+ trash:'<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>',
+ edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+ printer:'<path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>',
+ eye:'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/>',
+ x:'<path d="M18 6 6 18M6 6l12 12"/>',
+ download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
+ upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+ image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/>',
+ trend:'<path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/>',
+ alert:'<path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><path d="M12 9v4M12 17h.01"/>',
+ wallet:'<path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/>',
+ clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+ file:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M8 13h8M8 17h8"/>',
+ shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/>',
+ lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+ back:'<path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Z"/><path d="m18 9-6 6M12 9l6 6"/>',
+ bag:'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18M16 10a4 4 0 0 1-8 0"/>',
+ check:'<path d="M20 6 9 17l-5-5"/>',
+ tag:'<path d="M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z"/><circle cx="7" cy="7" r="1.5"/>',
+ user:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+ layers:'<path d="m12 2 10 5-10 5L2 7Z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/>',
+ grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+ heart:'<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"/>',
+ coins:'<circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18M7 6h1v4M16.71 13.88l.7.71-2.82 2.82"/>',
+ pause:'<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>',
+ moon:'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/>',
+ sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+ expand:'<path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/>',
+ qr:'<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/>',
+ msg:'<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/>',
+ note:'<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4Z"/>',
+ history:'<path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/>',
+ star:'<path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01Z"/>',
+};
+const I=(n,s=18)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]||''}</svg>`;
+
+/* =========================================================
+   Helpers
+========================================================= */
+const $=s=>document.querySelector(s);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const r2=n=>Math.round(n*100)/100;
+const money=n=>'₹'+r2(n||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+const m2=n=>(+n||0).toFixed(2);
+const shortMoney=n=>n>=100000?'₹'+(n/100000).toFixed(1)+'L':n>=1000?'₹'+(n/1000).toFixed(1)+'k':'₹'+Math.round(n);
+const dkey=d=>{const x=new Date(d);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0')};
+const fmtD=t=>new Date(t).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+const fmtDT=t=>new Date(t).toLocaleString('en-IN',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:true});
+const fmtT=t=>new Date(t).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:true});
+const ago=t=>{const m=Math.floor((Date.now()-t)/60000);return m<1?'just now':m<60?m+' min':Math.floor(m/60)+'h '+(m%60)+'m'};
+const hue=s=>{let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%360;return h};
+const sum=(a,f)=>a.reduce((s,x)=>s+(typeof f==='function'?f(x):x[f]||0),0);
+const initials=n=>String(n).trim().split(/\s+/).map(w=>w[0]).slice(0,2).join('').toUpperCase();
+const digits=p=>String(p||'').replace(/\D/g,'').slice(-10);
+const rangeOf=k=>{const d=new Date(),t=dkey(d);return k==='today'?[t,t]:k==='yest'?[dkey(Date.now()-864e5),dkey(Date.now()-864e5)]:k==='7'?[dkey(Date.now()-6*864e5),t]:k==='30'?[dkey(Date.now()-29*864e5),t]:[dkey(new Date(d.getFullYear(),d.getMonth(),1)),t]};
+const inRange=(t,f,to)=>t>=new Date(f+'T00:00:00').getTime()&&t<=new Date(to+'T23:59:59.999').getTime();
+const QUICK=[['today','Today'],['yest','Yesterday'],['7','Last 7 days'],['30','Last 30 days'],['month','This month']];
+
+/* =========================================================
+   Storage
+========================================================= */
+const LS='hotelpos_';
+const DB={
+  get(k,d){try{const v=localStorage.getItem(LS+k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(LS+k,JSON.stringify(v));return true}catch(e){toast('Storage full! Settings → Backup, then remove old photos.','err');return false}}
+};
+const PERMS=[
+  ['dashboard','View dashboard & sales'],
+  ['billing','Billing / take orders'],
+  ['settle','Settle bills (collect payment)'],
+  ['discount','Give discount on bills'],
+  ['tables','Tables & running orders'],
+  ['bills','View bills & reports'],
+  ['deleteBill','Cancel bills'],
+  ['customers','Customers'],
+  ['expenses','Expenses & profit'],
+  ['menu','Manage menu, food & photos'],
+  ['inventory','Manage inventory / stock'],
+  ['staff','Manage staff, roles & activity log'],
+  ['settings','Hotel settings & backup'],
+];
+const ROLES=['Admin','Manager','Cashier','Waiter'];
+const ROLE_CLS={Admin:'orange',Manager:'violet',Cashier:'blue',Waiter:'green'};
+const ALL1=Object.fromEntries(PERMS.map(p=>[p[0],1]));
+const DEF_PERMS={
+  Admin:{...ALL1},
+  Manager:{...ALL1,staff:0,settings:0},
+  Cashier:{...Object.fromEntries(PERMS.map(p=>[p[0],0])),billing:1,settle:1,tables:1,bills:1,customers:1},
+  Waiter:{...Object.fromEntries(PERMS.map(p=>[p[0],0])),billing:1,tables:1},
+};
+const EXP_CATS=['Groceries','Vegetables','Meat & Fish','Milk & Dairy','Gas / Fuel','Salary','Rent','Electricity','Water','Maintenance','Packaging','Other'];
+const NOTE_TAGS=['Less spicy','Extra spicy','No onion','No garlic','Less oil','Extra gravy','Parcel','Serve hot'];
+
+let S={};
+function seed(){
+  const C=[['Breakfast','🍳'],['Meals','🍛'],['Biryani','🍲'],['Chinese','🍜'],['Beverages','☕'],['Desserts','🍨']].map(([name,emoji])=>({id:uid(),name,emoji}));
+  const c=n=>C.find(x=>x.name===n).id;let code=100;
+  const it=(name,cat,price,veg=true,track=false,stock=0)=>({id:uid(),code:String(++code),name,cat:c(cat),price,veg,track,stock,low:5,active:true,img:''});
+  return {
+    settings:{name:'Sri Annapoorna Hotel',address:'12, Main Road, Chennai - 600001',phone:'98765 43210',gstin:'',gst:5,prefix:'INV',next:1001,paper:'80',footer:'Thank you! Visit again 🙏',
+      tables:12,svc:0,pack:10,upiId:'',upiName:'',qrOnBill:true,kotOnHold:true,notesOnBill:false},
+    categories:C,
+    items:[
+      it('Idli (2 pcs)','Breakfast',30),it('Plain Dosa','Breakfast',50),it('Masala Dosa','Breakfast',70),it('Ghee Roast','Breakfast',90),it('Ven Pongal','Breakfast',55),it('Poori Masala','Breakfast',60),it('Medu Vada','Breakfast',20),
+      it('South Indian Meals','Meals',120,true,true,50),it('Mini Meals','Meals',90),it('Curd Rice','Meals',60),it('Sambar Rice','Meals',65),
+      it('Chicken Biryani','Biryani',180,false,true,40),it('Mutton Biryani','Biryani',260,false,true,25),it('Egg Biryani','Biryani',140,false,true,30),it('Veg Biryani','Biryani',130,true,true,30),
+      it('Chicken Fried Rice','Chinese',150,false),it('Veg Noodles','Chinese',120),it('Gobi Manchurian','Chinese',110),it('Chilli Chicken','Chinese',170,false),
+      it('Filter Coffee','Beverages',20),it('Tea','Beverages',15),it('Fresh Lime Soda','Beverages',35),it('Badam Milk','Beverages',40),
+      it('Gulab Jamun','Desserts',40),it('Ice Cream','Desserts',50),it('Kesari','Desserts',35),
+    ],
+    staff:[{id:uid(),name:'Owner',role:'Admin',pin:'1234',phone:'',active:true},{id:uid(),name:'Cashier',role:'Cashier',pin:'1111',phone:'',active:true},{id:uid(),name:'Waiter',role:'Waiter',pin:'2222',phone:'',active:true}],
+    perms:JSON.parse(JSON.stringify(DEF_PERMS)),
+    bills:[],orders:[],customers:[],expenses:[],activity:[],
+    materials:[
+      {id:uid(),name:'Rice',unit:'kg',qty:50,min:10},{id:uid(),name:'Cooking Oil',unit:'L',qty:20,min:5},
+      {id:uid(),name:'Chicken',unit:'kg',qty:12,min:5},{id:uid(),name:'Milk',unit:'L',qty:8,min:10},
+    ],
+    invlog:[],
+  };
+}
+const KEYS=['settings','categories','items','staff','perms','bills','orders','customers','expenses','activity','materials','invlog'];
+function load(){
+  if(!DB.get('settings',null)){const d=seed();KEYS.forEach(k=>DB.set(k,d[k]))}
+  const d=seed();
+  KEYS.forEach(k=>S[k]=DB.get(k,d[k]));
+  S.settings={...d.settings,...S.settings};
+  ROLES.forEach(r=>{S.perms[r]={...DEF_PERMS[r],...(S.perms[r]||{})}});
+}
+const save=(...ks)=>ks.forEach(k=>DB.set(k,S[k]));
+function act(msg){S.activity.unshift({t:Date.now(),by:me()?.name||'—',role:me()?.role||'',msg});S.activity=S.activity.slice(0,400);save('activity')}
+
+/* =========================================================
+   UI primitives
+========================================================= */
+function toast(msg,type=''){
+  const el=document.createElement('div');el.className='toast '+type;
+  el.innerHTML=(type==='ok'?I('check'):type==='err'?I('alert'):'')+`<span>${esc(msg)}</span>`;
+  $('#toasts').appendChild(el);setTimeout(()=>{el.style.opacity='0';el.style.transition='.3s'},2600);setTimeout(()=>el.remove(),3000);
+}
+function openModal(title,body,foot='',opt={}){
+  $('#modalRoot').innerHTML=`<div class="modal-wrap" id="mw"><div class="modal ${opt.sm?'sm':''}" style="${opt.w?'max-width:'+opt.w+'px':''}">
+    <div class="modal-h"><h3>${title}</h3><button class="icon-btn" onclick="closeModal()">${I('x')}</button></div>
+    <div class="modal-b">${body}</div>${foot?`<div class="modal-f">${foot}</div>`:''}</div></div>`;
+  $('#mw').addEventListener('mousedown',e=>{if(e.target.id==='mw')closeModal()});
+  const f=$('#mw [autofocus]');if(f&&window.innerWidth>640)f.focus();
+}
+function closeModal(){$('#modalRoot').innerHTML=''}
+const modalOpen=()=>!!$('#modalRoot').innerHTML;
+function confirmDlg(title,msg,ok,okText='Delete',danger=true){
+  openModal(title,`<p class="muted" style="line-height:1.6">${msg}</p>`,`<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn ${danger?'btn-danger':'btn-primary'}" id="cfOk">${okText}</button>`,{sm:true});
+  $('#cfOk').onclick=()=>{closeModal();ok()};
+}
+const catOf=id=>S.categories.find(c=>c.id===id);
+const thumb=i=>i.img?`<img src="${i.img}" alt="${esc(i.name)}" loading="lazy">`:`<div class="ph" style="--h:${hue(i.name)}">${catOf(i.cat)?.emoji||esc((i.name||'?')[0])}</div>`;
+const avatar=(n,s='')=>`<div class="avatar" style="background:hsl(${hue(n)} 55% 45%);${s}">${esc(initials(n))}</div>`;
+const lowItems=()=>S.items.filter(i=>i.track&&i.stock<=i.low);
+const lowMats=()=>S.materials.filter(m=>m.qty<=m.min);
+const kpi=(label,val,sub,cls,icon,color)=>`<div class="card kpi"><div class="kpi-ic ${color}">${I(icon,22)}</div><div style="min-width:0"><span>${label}</span><b>${val}</b><small class="${cls}">${sub}</small></div></div>`;
+const payAmt=(b,m)=>b.pay==='Split'?(b.split?.[m]||0):(b.pay===m?b.total:0);
+const orderSub=o=>sum(o.items,i=>{const it=S.items.find(x=>x.id===i.id);return it?it.price*i.qty:0});
+
+/* ---------- Theme / fullscreen ---------- */
+function applyTheme(){const t=DB.get('theme','light');document.documentElement.dataset.theme=t;const b=$('#themeBtn');if(b)b.innerHTML=I(t==='dark'?'sun':'moon')}
+function toggleTheme(){DB.set('theme',DB.get('theme','light')==='dark'?'light':'dark');applyTheme()}
+function toggleFS(){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.().catch(()=>{})}
+
+/* ---------- QR / UPI ---------- */
+function qrData(text){
+  try{if(!window.QRCode)return '';const d=document.createElement('div');new QRCode(d,{text,width:256,height:256,correctLevel:QRCode.CorrectLevel.M});
+    const c=d.querySelector('canvas');return c?c.toDataURL('image/png'):(d.querySelector('img')?.src||'')}catch(e){return ''}
+}
+const upiLink=(amt,note='')=>`upi://pay?pa=${encodeURIComponent(S.settings.upiId)}&pn=${encodeURIComponent(S.settings.upiName||S.settings.name)}&am=${(+amt).toFixed(2)}&cu=INR${note?'&tn='+encodeURIComponent(note):''}`;
+function showQR(amount,note){
+  if(!S.settings.upiId)return toast(can('settings')?'Add your UPI ID in Settings first':'UPI ID not set — ask Admin','err');
+  const src=qrData(upiLink(amount,note));
+  openModal('Scan & Pay with UPI',`<div class="qr-box">${src?`<img src="${src}" alt="UPI QR">`:`<div class="empty">${I('qr',40)}<p>QR needs internet once to load</p></div>`}
+    <b>${money(amount)}</b><p class="muted" style="margin-top:6px">${esc(S.settings.upiName||S.settings.name)} · ${esc(S.settings.upiId)}</p>
+    <p class="muted" style="font-size:12px;margin-top:10px">GPay · PhonePe · Paytm · any UPI app</p></div>`,
+    `<button class="btn btn-primary" onclick="closeModal()">Done</button>`,{sm:true});
+}
+
+/* =========================================================
+   Auth
+========================================================= */
+let loginSel=null,pinBuf='';
+const me=()=>S.staff.find(s=>s.id===sessionStorage.getItem(LS+'user')&&s.active);
+const can=p=>{const u=me();if(!u)return false;if(u.role==='Admin')return true;return !!(S.perms[u.role]||{})[p]};
+
+function renderLogin(){
+  const list=S.staff.filter(s=>s.active);
+  if(!loginSel||!list.find(s=>s.id===loginSel))loginSel=list[0]?.id;
+  const L=esc(initials(S.settings.name)[0]||'H');
+  $('#loginView').innerHTML=`<div class="login">
+   <div class="login-art">
+     <div class="brand" style="padding:0"><div class="logo">${L}</div><div><b>${esc(S.settings.name)}</b><small>Billing &amp; POS</small></div></div>
+     <div><h2>Fast billing for a busy restaurant.</h2><p>Category-wise ordering with food photos, table management, kitchen KOT, 3-inch thermal bills, UPI QR, stock, expenses and staff permissions — all in one place.</p></div>
+     <div class="feat">
+       <div>${I('cart')} Quick POS billing</div><div>${I('printer')} 80mm thermal print</div>
+       <div>${I('grid')} Table &amp; KOT orders</div><div>${I('qr')} UPI QR payments</div>
+       <div>${I('box')} Inventory alerts</div><div>${I('shield')} Role-based access</div>
+     </div>
+   </div>
+   <div class="login-form"><div class="login-card">
+     <div class="login-m-brand"><div class="logo">${L}</div><div><b style="font-size:16px">${esc(S.settings.name)}</b><div class="muted" style="font-size:12px">Billing &amp; POS</div></div></div>
+     <h3>Welcome back</h3><p class="muted" style="margin-top:4px">Select your profile and enter your 4-digit PIN</p>
+     <div class="staff-pick">${list.map(s=>`<button class="sp ${s.id===loginSel?'on':''}" onclick="loginSel='${s.id}';pinBuf='';renderLogin()">${avatar(s.name)}<b>${esc(s.name)}</b><small>${s.role}</small></button>`).join('')}</div>
+     <div class="pin-dots" id="pinDots">${[0,1,2,3].map(i=>`<i class="${i<pinBuf.length?'f':''}"></i>`).join('')}</div>
+     <div class="keypad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button onclick="pinKey('${n}')">${n}</button>`).join('')}<button onclick="pinBuf='';renderLogin()" style="font-size:13px;color:var(--muted)">Clear</button><button onclick="pinKey('0')">0</button><button onclick="pinKey('del')">${I('back',22)}</button></div>
+     <p class="muted" style="text-align:center;margin-top:20px;font-size:12px;line-height:1.7">Default PINs — Owner <b>1234</b> · Cashier <b>1111</b> · Waiter <b>2222</b><br>Change them in Staff &amp; Roles</p>
+   </div></div></div>`;
+}
+function pinKey(k){
+  if(k==='del')pinBuf=pinBuf.slice(0,-1);else if(pinBuf.length<4)pinBuf+=k;
+  renderLogin();
+  if(pinBuf.length===4){
+    const u=S.staff.find(s=>s.id===loginSel);
+    if(u&&u.pin===pinBuf){sessionStorage.setItem(LS+'user',u.id);pinBuf='';act('Logged in');startApp()}
+    else{setTimeout(()=>{$('#pinDots')?.classList.add('shake');toast('Wrong PIN','err');setTimeout(()=>{pinBuf='';renderLogin()},400)},120)}
+  }
+}
+function logout(){act('Logged out');sessionStorage.removeItem(LS+'user');sessionStorage.removeItem(LS+'page');$('#appView').classList.add('hidden');$('#loginView').classList.remove('hidden');closeModal();renderLogin()}
+
+/* =========================================================
+   Shell / navigation
+========================================================= */
+const NAV=[
+  {id:'dashboard',label:'Dashboard',icon:'dash',perm:'dashboard',grp:'Main'},
+  {id:'pos',label:'Billing (POS)',icon:'cart',perm:'billing',grp:'Main'},
+  {id:'tables',label:'Tables & Orders',icon:'grid',perm:'tables',grp:'Main'},
+  {id:'bills',label:'Bills & Reports',icon:'receipt',perm:'bills',grp:'Main'},
+  {id:'customers',label:'Customers',icon:'heart',perm:'customers',grp:'Business'},
+  {id:'expenses',label:'Expenses',icon:'coins',perm:'expenses',grp:'Business'},
+  {id:'menu',label:'Menu & Food',icon:'menu',perm:'menu',grp:'Manage'},
+  {id:'inventory',label:'Inventory',icon:'box',perm:'inventory',grp:'Manage'},
+  {id:'staff',label:'Staff & Roles',icon:'users',perm:'staff',grp:'Manage'},
+  {id:'settings',label:'Settings',icon:'gear',perm:'settings',grp:'Manage'},
+];
+let cur='';
+function startApp(){
+  const u=me();if(!u)return logout();
+  $('#loginView').classList.add('hidden');$('#loginView').innerHTML='';
+  $('#appView').classList.remove('hidden');
+  $('#hambBtn').innerHTML=I('hamb',22);$('#fsBtn').innerHTML=I('expand');applyTheme();
+  const last=sessionStorage.getItem(LS+'page');
+  const first=NAV.find(n=>can(n.perm));
+  go(last&&NAV.find(n=>n.id===last&&can(n.perm))?last:(first?first.id:'none'));
+}
+function renderShell(){
+  const u=me();if(!u)return;
+  $('#brandName').textContent=S.settings.name;$('#brandLogo').textContent=initials(S.settings.name)[0]||'H';
+  let g='',h='';
+  NAV.filter(n=>can(n.perm)).forEach(n=>{
+    if(n.grp!==g){g=n.grp;h+=`<div class="nav-label">${g}</div>`}
+    const badge=n.id==='inventory'?`${lowItems().length+lowMats().length||''}`:n.id==='tables'?`${S.orders.length||''}`:'';
+    h+=`<a class="${cur===n.id?'active':''}" onclick="go('${n.id}')">${I(n.icon)}<span>${n.label}</span>${badge?`<span class="nb ${n.id==='tables'?'o':''}">${badge}</span>`:''}</a>`;
+  });
+  $('#nav').innerHTML=h;
+  $('#sideUser').innerHTML=`${avatar(u.name)}<div style="min-width:0"><b>${esc(u.name)}</b><small>${u.role}</small></div><button onclick="logout()" title="Logout">${I('logout')}</button>`;
+  $('#topUser').innerHTML=`${I('user',15)}<span>${esc(u.name)}</span><span class="badge ${ROLE_CLS[u.role]}">${u.role}</span>`;
+  tick();
+}
+function tick(){$('#clock').innerHTML=I('clock',15)+new Date().toLocaleString('en-IN',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true})}
+setInterval(()=>{if(me()&&!$('#appView').classList.contains('hidden')){tick();if(cur==='tables'&&!modalOpen())PAGES.tables()}},30000);
+function toggleSide(o){$('#sidebar').classList.toggle('open',o);$('#overlay').classList.toggle('show',o)}
+const PAGES={};
+function go(p){
+  const n=NAV.find(x=>x.id===p);
+  cur=p;sessionStorage.setItem(LS+'page',p);
+  toggleSide(false);closeModal();
+  const view=$('#view');view.className='view';window.scrollTo(0,0);
+  $('#pageTitle').textContent=n?n.label:'No access';
+  renderShell();
+  if(!n||!can(n.perm)){view.innerHTML=`<div class="card empty" style="padding:60px">${I('lock',40)}<p>You don't have access to this page</p><small>Ask the Admin to enable it in Staff &amp; Roles.</small></div>`;return}
+  PAGES[p]();
+}
+
+/* ---------- Keyboard ---------- */
+document.addEventListener('keydown',e=>{
+  if(!$('#loginView').classList.contains('hidden')&&$('#loginView').innerHTML){
+    if(/^\d$/.test(e.key))pinKey(e.key);else if(e.key==='Backspace')pinKey('del');return;
+  }
+  if(e.key==='Escape'){if(modalOpen())closeModal();else{toggleCart(false);toggleSide(false)}return}
+  if(cur!=='pos'||modalOpen())return;
+  const typing=/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName);
+  const map={F2:()=>$('#posQ')?.focus(),F4:holdOrder,F7:()=>printKOT(),F8:()=>saveBill(false),F9:()=>saveBill(true)};
+  if(map[e.key]){e.preventDefault();map[e.key]()}
+  else if(e.key==='/'&&!typing){e.preventDefault();$('#posQ')?.focus()}
+});
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+PAGES.dashboard=function(){
+  const valid=S.bills.filter(b=>!b.cancelled);
+  const today=dkey(Date.now()),yest=dkey(Date.now()-864e5);
+  const tb=valid.filter(b=>dkey(b.t)===today),yb=valid.filter(b=>dkey(b.t)===yest);
+  const ts=sum(tb,'total'),ys=sum(yb,'total');
+  const pct=ys?((ts-ys)/ys*100):null;
+  const lowN=lowItems().length+lowMats().length;
+  const texp=sum(S.expenses.filter(e=>dkey(e.t)===today),'amount');
+  const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const k=dkey(d);days.push({k,l:i===0?'Today':d.toLocaleDateString('en-IN',{weekday:'short'}),v:sum(valid.filter(b=>dkey(b.t)===k),'total')})}
+  const max=Math.max(...days.map(d=>d.v),1);
+  const since=Date.now()-7*864e5,agg={},hrs=Array(24).fill(0);
+  valid.filter(b=>b.t>=since).forEach(b=>{hrs[new Date(b.t).getHours()]+=b.total;b.items.forEach(i=>{agg[i.id]=agg[i.id]||{name:i.name,id:i.id,q:0,a:0};agg[i.id].q+=i.qty;agg[i.id].a+=i.qty*i.price})});
+  const hMax=Math.max(...hrs,1),peak=hrs.indexOf(Math.max(...hrs));
+  const hl=h=>(h%12||12)+(h<12?'a':'p');
+  const top=Object.values(agg).sort((a,b)=>b.q-a.q).slice(0,5);const topMax=top[0]?.q||1;
+  const pays=['Cash','UPI','Card'].map(p=>({p,v:sum(tb,b=>payAmt(b,p)),n:tb.filter(b=>b.pay===p||(b.pay==='Split'&&b.split?.[p])).length}));
+  const payCol={Cash:'#16a34a',UPI:'#7c3aed',Card:'#2563eb'};
+  const cats={};tb.forEach(b=>b.items.forEach(i=>{const c=catOf(i.cat);const k=c?c.name:'Other';cats[k]=cats[k]||{e:c?.emoji||'🍽️',v:0};cats[k].v+=i.qty*i.price}));
+  const catList=Object.entries(cats).sort((a,b)=>b[1].v-a[1].v);const catMax=catList[0]?.[1].v||1;
+  const recent=[...valid].sort((a,b)=>b.t-a.t).slice(0,6);
+  const lows=[...lowItems().map(i=>({n:i.name,q:i.stock,u:'pcs'})),...lowMats().map(m=>({n:m.name,q:m.qty,u:m.unit}))].slice(0,6);
+  const h=new Date().getHours();const greet=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+  $('#view').innerHTML=`
+  <div class="page-head"><div><h2>${greet}, ${esc(me().name)} 👋</h2><p>Here's how ${esc(S.settings.name)} is doing today · ${fmtD(Date.now())}</p></div>
+    <div class="actions">${can('tables')?`<button class="btn btn-ghost" onclick="go('tables')">${I('grid',16)} Tables</button>`:''}${can('billing')?`<button class="btn btn-primary" onclick="newOrder()">${I('plus')} New Bill</button>`:''}</div></div>
+  <div class="kpis">
+    ${kpi("Today's Sales",money(ts),pct===null?'No sales yesterday':`${pct>=0?'▲':'▼'} ${Math.abs(pct).toFixed(1)}% vs yesterday`,pct===null?'':pct>=0?'up':'down','trend','orange')}
+    ${kpi('Orders Today',tb.length,`${yb.length} yesterday · avg ${money(tb.length?ts/tb.length:0)}`,'','receipt','blue')}
+    ${can('tables')?kpi('Running Orders',S.orders.length,`${money(sum(S.orders,orderSub))} not yet billed`,'','pause','violet'):''}
+    ${can('expenses')?kpi("Today's Profit",money(ts-texp),`Expenses ${money(texp)}`,ts-texp>=0?'up':'down','coins','green'):''}
+    ${kpi('Low Stock Alerts',lowN,lowN?'Needs attention':'All items stocked',lowN?'down':'','alert',lowN?'red':'slate')}
+  </div>
+  <div class="dash-grid">
+    <div class="card span2"><div class="card-h"><h3>Sales — last 7 days</h3><span class="muted">Total ${money(sum(days,'v'))}</span></div>
+      <div class="bars">${days.map(d=>`<div class="bar-col ${d.k===today?'today':''}"><span class="bar-v">${d.v?shortMoney(d.v):''}</span><div class="bar-track"><div class="bar" style="height:${Math.max(d.v/max*100,2)}%" title="${money(d.v)}"></div></div><span class="bar-l">${d.l}</span></div>`).join('')}</div></div>
+    <div class="card"><div class="card-h"><h3>Payment Split</h3><span class="muted">Today</span></div>
+      ${pays.map(p=>`<div style="margin-bottom:18px"><div style="display:flex;justify-content:space-between"><b style="font-size:13.5px">${p.p} <span class="muted" style="font-weight:500">· ${p.n} bills</span></b><b>${money(p.v)}</b></div><div class="prog"><i style="width:${ts?p.v/ts*100:0}%;background:${payCol[p.p]}"></i></div></div>`).join('')}
+      <div class="list-row" style="border-top:1px solid var(--border);padding-top:14px"><span class="grow muted">Total collected</span><b style="font-size:18px">${money(ts)}</b></div></div>
+    <div class="card span2"><div class="card-h"><h3>Peak Hours</h3><span class="muted">${hrs[peak]?`Busiest around ${hl(peak)} · last 7 days`:'Last 7 days'}</span></div>
+      <div class="bars sm">${hrs.map((v,i)=>i>=6?`<div class="bar-col"><span class="bar-v">${v?shortMoney(v):''}</span><div class="bar-track"><div class="bar ${i===peak&&v?'peak':''}" style="height:${Math.max(v/hMax*100,2)}%" title="${hl(i)}: ${money(v)}"></div></div><span class="bar-l">${i%2===0?hl(i):''}</span></div>`:'').join('')}</div></div>
+    <div class="card"><div class="card-h"><h3>Top Selling Items</h3><span class="muted">Last 7 days</span></div>
+      ${top.length?top.map(t=>{const it=S.items.find(x=>x.id===t.id)||{name:t.name};return `<div class="list-row"><div class="mini-thumb">${thumb(it)}</div><div class="grow"><b>${esc(t.name)}</b><div class="prog" style="height:6px"><i style="width:${t.q/topMax*100}%;background:var(--primary)"></i></div></div><div class="r"><b>${t.q}</b><small>${shortMoney(t.a)}</small></div></div>`}).join(''):`<div class="empty">${I('trend',32)}<p>No sales yet</p></div>`}</div>
+    <div class="card"><div class="card-h"><h3>Category Sales</h3><span class="muted">Today</span></div>
+      ${catList.length?catList.map(([n,c])=>`<div class="list-row"><div class="rank" style="font-size:16px;background:var(--primary-50)">${c.e}</div><div class="grow"><b>${esc(n)}</b><div class="prog" style="height:6px"><i style="width:${c.v/catMax*100}%;background:#fb923c"></i></div></div><b>${money(c.v)}</b></div>`).join(''):`<div class="empty">${I('layers',32)}<p>No sales today</p></div>`}</div>
+    <div class="card"><div class="card-h"><h3>Recent Bills</h3>${can('bills')?`<a onclick="go('bills')">View all →</a>`:''}</div>
+      ${recent.length?recent.map(b=>`<div class="list-row" style="cursor:pointer" onclick="viewBill('${b.id}')"><div class="rank">${I('receipt',15)}</div><div class="grow"><b>${esc(b.no)}</b><small>${fmtT(b.t)} · ${b.type}${b.table?' · T'+esc(b.table):''}</small></div><div class="r"><b>${money(b.total)}</b><small>${b.pay}</small></div></div>`).join(''):`<div class="empty">${I('receipt',32)}<p>No bills yet</p></div>`}</div>
+    <div class="card"><div class="card-h"><h3>Stock Alerts</h3>${can('inventory')?`<a onclick="go('inventory')">Manage →</a>`:''}</div>
+      ${lows.length?lows.map(l=>`<div class="list-row"><div class="rank" style="background:var(--red-50);color:var(--red)">${I('alert',14)}</div><div class="grow"><b>${esc(l.n)}</b></div><span class="badge ${l.q<=0?'red':'amber'}">${l.q<=0?'Out':r2(l.q)+' '+esc(l.u)+' left'}</span></div>`).join(''):`<div class="empty">${I('check',32)}<p>Everything is in stock</p></div>`}</div>
+  </div>`;
+};
+
+/* =========================================================
+   POS / BILLING
+========================================================= */
+let cart=DB.get('cart',[]);
+let P={cat:'all',q:'',type:'Dine-in',table:'',cust:'',phone:'',dv:'',dt:'%',pay:'Cash',recv:'',sc:'',su:'',sk:'',orderId:null,...DB.get('posmeta',{})};
+const saveCart=()=>{DB.set('cart',cart);DB.set('posmeta',P)};
+const cartLines=()=>cart.map(c=>{const it=S.items.find(i=>i.id===c.id);return it?{...it,qty:c.qty,note:c.note||'',kot:c.kot||0}:null}).filter(Boolean);
+function calc(lines){
+  const s=S.settings;
+  const sub=r2(sum(lines,l=>l.price*l.qty));
+  const dv=can('discount')?Math.max(0,parseFloat(P.dv)||0):0;
+  const disc=r2(P.dt==='%'?sub*Math.min(dv,100)/100:Math.min(dv,sub));
+  const taxable=sub-disc;
+  const svcP=P.type==='Dine-in'?(+s.svc||0):0,svc=r2(taxable*svcP/100);
+  const pack=P.type!=='Dine-in'&&lines.length?r2(+s.pack||0):0;
+  const gst=+s.gst||0,tax=r2((taxable+svc+pack)*gst/100);
+  const raw=taxable+svc+pack+tax,total=Math.max(0,Math.round(raw)),round=r2(total-raw);
+  return {sub,disc,svcP,svc,pack,gst,tax,round,total};
+}
+function popularIds(){
+  const since=Date.now()-30*864e5,q={};
+  S.bills.filter(b=>!b.cancelled&&b.t>=since).forEach(b=>b.items.forEach(i=>q[i.id]=(q[i.id]||0)+i.qty));
+  return Object.entries(q).sort((a,b)=>b[1]-a[1]).slice(0,12).map(x=>x[0]);
+}
+PAGES.pos=function(){
+  const v=$('#view');v.classList.add('flush');
+  v.innerHTML=`<div class="pos">
+    <section class="pos-main">
+      <div class="pos-top">
+        <div class="pos-bar">
+          <div class="search">${I('search')}<input id="posQ" placeholder="Search name or code… (F2)" value="${esc(P.q)}" autocomplete="off" enterkeyhint="go"></div>
+          ${can('tables')?`<button class="run-btn" onclick="runningModal()" title="Running orders">${I('pause',16)}<span>Running</span>${S.orders.length?`<em>${S.orders.length}</em>`:''}</button>`:''}
+        </div>
+        <div class="chips" id="posCats"></div>
+      </div>
+      <div class="food-grid" id="foodGrid"></div>
+    </section>
+    <aside class="cart" id="cart"></aside>
+    <div class="cart-backdrop" onclick="toggleCart(false)"></div>
+    <button class="cart-fab" id="cartFab" onclick="toggleCart(true)"></button>
+  </div>`;
+  const q=$('#posQ');
+  q.oninput=e=>{P.q=e.target.value;renderFood()};
+  q.onkeydown=e=>{if(e.key==='Enter'){const l=foodList();const ex=S.items.find(i=>i.active&&i.code&&i.code===P.q.trim());const pick=ex||(l.length===1?l[0]:null);if(pick){addToCart(pick.id);P.q='';q.value='';renderFood()}}};
+  renderCats();renderFood();renderCart();
+};
+function renderCats(){
+  const act=S.items.filter(i=>i.active),pop=popularIds();
+  const cats=[{id:'all',name:'All',emoji:'🍽️'},...(pop.length?[{id:'pop',name:'Popular',emoji:'🔥'}]:[]),...S.categories];
+  $('#posCats').innerHTML=cats.map(c=>{
+    const n=c.id==='all'?act.length:c.id==='pop'?pop.length:act.filter(i=>i.cat===c.id).length;
+    return `<button class="chip ${P.cat===c.id?'on':''}" onclick="P.cat='${c.id}';renderCats();renderFood()"><span>${c.emoji||''}</span>${esc(c.name)}<em>${n}</em></button>`}).join('');
+}
+function foodList(){
+  const q=P.q.trim().toLowerCase();
+  if(P.cat==='pop'&&!q){const ids=popularIds();return ids.map(id=>S.items.find(i=>i.id===id&&i.active)).filter(Boolean)}
+  return S.items.filter(i=>i.active&&(P.cat==='all'||P.cat==='pop'||i.cat===P.cat)&&(!q||i.name.toLowerCase().includes(q)||(i.code||'')===q));
+}
+function renderFood(){
+  const g=$('#foodGrid');if(!g)return;
+  const list=foodList();
+  if(!list.length){g.innerHTML=`<div class="empty" style="grid-column:1/-1">${I('search',36)}<p>No food items found</p><small>${can('menu')?'Add items from Menu &amp; Food':'Try another category'}</small></div>`;return}
+  g.innerHTML=list.map(i=>{
+    const q=sum(cart.filter(x=>x.id===i.id),'qty'),out=i.track&&i.stock<=0,low=i.track&&!out&&i.stock<=i.low;
+    return `<button class="food ${out?'out':''} ${q?'incart':''}" ${out?'disabled':''} onclick="addToCart('${i.id}')">
+      <div class="food-img">${thumb(i)}${i.code?`<span class="code">#${esc(i.code)}</span>`:''}${q?`<span class="qbadge">${q}</span>`:''}${out?'<span class="soldout">Sold out</span>':''}</div>
+      <div class="food-body"><div class="food-name"><i class="vd ${i.veg?'':'nv'}"></i><span>${esc(i.name)}</span></div>
+      <div class="food-foot"><b>${money(i.price)}</b>${i.track&&!out?`<small class="${low?'warn':''}">${i.stock} left</small>`:''}</div></div></button>`}).join('');
+}
+function addToCart(id){
+  const it=S.items.find(i=>i.id===id);if(!it)return;
+  const c=cart.find(x=>x.id===id&&!x.note),total=sum(cart.filter(x=>x.id===id),'qty')+1;
+  if(it.track&&total>it.stock)return toast(`Only ${it.stock} ${it.name} left in stock`,'err');
+  if(c)c.qty++;else cart.push({id,qty:1});
+  saveCart();renderFood();renderCart();
+  const f=$('#cartFab');if(f){f.classList.remove('bump');void f.offsetWidth;f.classList.add('bump')}
+}
+function chQty(idx,d){
+  const c=cart[idx];if(!c)return;const it=S.items.find(i=>i.id===c.id);
+  if(d>0&&it&&it.track&&sum(cart.filter(x=>x.id===c.id),'qty')+1>it.stock)return toast(`Only ${it.stock} in stock`,'err');
+  c.qty+=d;if(c.qty<=0)cart.splice(idx,1);else if(c.kot>c.qty)c.kot=c.qty;
+  saveCart();renderFood();renderCart();
+}
+function noteModal(idx){
+  const c=cart[idx];if(!c)return;const it=S.items.find(i=>i.id===c.id);
+  openModal(`Note — ${esc(it?.name)}`,`<div class="field"><label>Cooking instruction</label><input class="input" id="nTxt" value="${esc(c.note||'')}" placeholder="e.g. Less spicy, no onion" autofocus></div>
+    <div class="tagrow">${NOTE_TAGS.map(t=>`<button class="chip sm" type="button" onclick="const n=$('#nTxt');n.value=n.value?n.value+', ${t}':'${t}'">${t}</button>`).join('')}</div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="nOk">Save note</button>`,{sm:true});
+  $('#nOk').onclick=()=>{const v=$('#nTxt').value.trim();
+    if(c.qty>1&&v&&!c.note){c.qty--;cart.splice(idx+1,0,{id:c.id,qty:1,note:v,kot:0});if(c.kot>c.qty)c.kot=c.qty}else c.note=v;
+    saveCart();closeModal();renderCart()};
+}
+function resetPos(){cart=[];Object.assign(P,{orderId:null,table:'',cust:'',phone:'',dv:'',recv:'',sc:'',su:'',sk:'',pay:'Cash'});saveCart();renderFood();renderCart();renderShell()}
+function clearCart(){
+  if(!cart.length&&!P.orderId)return;
+  const o=P.orderId&&S.orders.find(x=>x.id===P.orderId);
+  confirmDlg(o?'Cancel running order?':'Clear order?',o?`The running order${o.table?' for <b>Table '+esc(o.table)+'</b>':''} will be deleted.`:'All items in the current order will be removed.',()=>{
+    if(o){S.orders=S.orders.filter(x=>x.id!==o.id);save('orders');act(`Cancelled running order${o.table?' (Table '+o.table+')':''}`)}
+    resetPos();
+  },o?'Cancel order':'Clear');
+}
+function toggleCart(o){$('#cart')?.classList.toggle('open',o)}
+function renderCart(){
+  const el=$('#cart');if(!el)return;
+  const lines=cartLines(),n=sum(lines,'qty'),dis=lines.length?'':'disabled';
+  const o=P.orderId&&S.orders.find(x=>x.id===P.orderId);
+  if(P.orderId&&!o)P.orderId=null;
+  const settle=can('settle');
+  el.innerHTML=`
+  <div class="cart-head"><div><h3>${o?'Running Order':'Current Order'} ${o?`<span class="badge orange">${o.table?'Table '+esc(o.table):o.type} · ${ago(o.t)}</span>`:''}</h3><small>${n} item${n===1?'':'s'}${settle?` · Next bill ${esc(S.settings.prefix)}${S.settings.next}`:''}</small></div>
+    <div style="display:flex;gap:2px">${settle&&S.bills.length?`<button class="icon-btn" title="Reprint last bill" onclick="printBill(S.bills[S.bills.length-1])">${I('history')}</button>`:''}<button class="icon-btn danger" title="Clear / cancel" onclick="clearCart()">${I('trash')}</button><button class="icon-btn only-m" onclick="toggleCart(false)">${I('x')}</button></div></div>
+  <div class="cart-meta">
+    <div class="seg">${['Dine-in','Parcel','Delivery'].map(x=>`<button class="${P.type===x?'on':''}" onclick="P.type='${x}';saveCart();renderCart()">${x}</button>`).join('')}</div>
+    <div class="meta-grid">
+      ${P.type==='Dine-in'?`<input class="input" placeholder="Table no." list="tblList" value="${esc(P.table)}" oninput="P.table=this.value;saveCart()"><datalist id="tblList">${Array.from({length:+S.settings.tables||0},(_,i)=>`<option value="${i+1}">`).join('')}</datalist>`:''}
+      <input class="input ${P.type==='Dine-in'?'':'full'}" id="custName" placeholder="Customer name" value="${esc(P.cust)}" oninput="P.cust=this.value;saveCart()">
+      <input class="input full" placeholder="Phone (auto-finds customer)" inputmode="tel" value="${esc(P.phone)}" oninput="onPhone(this.value)">
+      <div class="cust-hint full" id="custHint"></div>
+    </div>
+  </div>
+  <div class="cart-lines">${lines.length?lines.map((l,idx)=>`<div class="line">
+      <div class="line-info"><div class="line-name"><i class="vd ${l.veg?'':'nv'}"></i><span>${esc(l.name)}</span></div>
+        <div class="line-sub"><small>${money(l.price)}</small>${l.kot?(l.kot>=l.qty?'<span class="kt">✓ KOT</span>':`<span class="kt new">+${l.qty-l.kot} new</span>`):''}${l.note?`<span class="line-note">“${esc(l.note)}”</span>`:''}<a onclick="noteModal(${idx})">${l.note?'edit':'+ note'}</a></div></div>
+      <div class="qty"><button onclick="chQty(${idx},-1)">${I('minus',14)}</button><span>${l.qty}</span><button onclick="chQty(${idx},1)">${I('plus',14)}</button></div>
+      <div class="line-amt">${money(l.price*l.qty)}</div></div>`).join(''):`<div class="empty-cart">${I('bag',40)}<p>No items added</p><small>Tap food items · type a code + Enter</small></div>`}</div>
+  <div class="cart-foot">
+    ${can('discount')&&settle?`<div class="disc"><label>Discount</label><input class="input" inputmode="decimal" placeholder="0" value="${esc(P.dv)}" oninput="P.dv=this.value;saveCart();renderSum()"><div class="seg">${['%','₹'].map(x=>`<button class="${P.dt===x?'on':''}" onclick="P.dt='${x}';saveCart();renderCart()">${x}</button>`).join('')}</div></div>`:''}
+    <div id="cartSum"></div>
+    ${settle?`<div class="seg pay">${['Cash','UPI','Card','Split'].map(x=>`<button class="${P.pay===x?'on':''}" onclick="P.pay='${x}';saveCart();renderCart()">${x}</button>`).join('')}</div>
+    <div id="payExtra"></div>`:''}
+    <div class="cart-actions">
+      <button class="btn btn-ghost" onclick="printKOT()" ${dis} title="Send to kitchen (F7)">${I('file',16)} KOT</button>
+      <button class="btn btn-ghost" onclick="holdOrder()" ${dis} title="Hold / save to table (F4)">${I('pause',16)} Hold</button>
+      ${settle?`<button class="btn btn-soft" onclick="saveBill(false)" ${dis} title="Save without printing (F8)">Save</button>
+      <button class="btn btn-primary main-act" onclick="saveBill(true)" ${dis} title="F9">${I('printer',18)} Save &amp; Print Bill</button>`:`<button class="btn btn-ghost" onclick="printDraft()" ${dis}>${I('eye',16)} Draft</button>
+      <button class="btn btn-primary main-act" onclick="sendOrder()" ${dis}>${I('check',18)} Send to Kitchen &amp; Hold</button>`}
+    </div>
+  </div>`;
+  renderSum();onPhone(P.phone,true);
+}
+function renderSum(){
+  const lines=cartLines(),t=calc(lines),n=sum(lines,'qty');
+  $('#cartSum').innerHTML=`
+    <div class="sum-row"><span>Subtotal</span><span>${money(t.sub)}</span></div>
+    ${t.disc?`<div class="sum-row dis"><span>Discount</span><span>− ${money(t.disc)}</span></div>`:''}
+    ${t.svc?`<div class="sum-row"><span>Service charge (${t.svcP}%)</span><span>${money(t.svc)}</span></div>`:''}
+    ${t.pack?`<div class="sum-row"><span>Packing charge</span><span>${money(t.pack)}</span></div>`:''}
+    ${t.gst?`<div class="sum-row"><span>GST (${t.gst}%)</span><span>${money(t.tax)}</span></div>`:''}
+    ${t.round?`<div class="sum-row"><span>Round off</span><span>${t.round>0?'+':''}${m2(t.round)}</span></div>`:''}
+    <div class="sum-total"><span>Total</span>${money(t.total)}</div>`;
+  renderPayExtra(t.total);
+  const f=$('#cartFab');
+  if(f){f.classList.toggle('show',n>0);f.innerHTML=`<span class="cnt">${n}</span><span>${P.orderId?'Running order':'View order'}</span><span class="tot">${money(t.total)}</span>`}
+}
+function renderPayExtra(total){
+  const el=$('#payExtra');if(!el)return;
+  if(P.pay==='Cash'){
+    const r=parseFloat(P.recv)||0,ch=r-total;
+    el.innerHTML=`<div class="paybox"><label>Cash received</label><input class="input" inputmode="decimal" placeholder="${total}" value="${esc(P.recv)}" oninput="P.recv=this.value;saveCart();cashChg(${total})">
+      <span class="chg" id="cashChg"></span></div>`;
+    cashChg(total);
+  }else if(P.pay==='UPI'){
+    el.innerHTML=`<button class="btn btn-ghost" style="width:100%" onclick="showQR(${total},'Bill ${esc(S.settings.prefix)}${S.settings.next}')">${I('qr',16)} Show UPI QR to customer</button>`;
+  }else if(P.pay==='Split'){
+    const tot=(+P.sc||0)+(+P.su||0)+(+P.sk||0),left=r2(total-tot);
+    el.innerHTML=`<div class="split">${[['sc','Cash'],['su','UPI'],['sk','Card']].map(([k,l])=>`<div><label>${l}</label><input class="input" inputmode="decimal" placeholder="0" value="${esc(P[k])}" oninput="P.${k}=this.value;saveCart();splitLeft(${total})"></div>`).join('')}</div>
+      <div class="sum-row" id="splitLeft" style="margin-top:4px"></div>`;
+    splitLeft(total);
+  }else el.innerHTML='';
+}
+function cashChg(total){const r=parseFloat(P.recv)||0,ch=r2(r-total),e=$('#cashChg');if(e){e.style.color=ch<0?'var(--red)':'var(--green)';e.textContent=r?(ch>=0?'Return '+money(ch):'Short '+money(-ch)):''}}
+function splitLeft(total){const tot=(+P.sc||0)+(+P.su||0)+(+P.sk||0),left=r2(total-tot);const e=$('#splitLeft');if(e)e.innerHTML=`<span>Entered ${money(tot)}</span><span style="font-weight:700;color:${left===0?'var(--green)':'var(--red)'}">${left===0?'✓ Matches total':left>0?'Remaining '+money(left):'Excess '+money(-left)}</span>`}
+function onPhone(v,silent){
+  if(!silent){P.phone=v;saveCart()}
+  const d=digits(v),h=$('#custHint');if(!h)return;
+  const c=d.length===10&&S.customers.find(x=>digits(x.phone)===d);
+  if(c){if(!P.cust&&c.name){P.cust=c.name;const n=$('#custName');if(n)n.value=c.name;saveCart()}h.innerHTML=`⭐ Returning customer · ${c.visits} visit${c.visits===1?'':'s'} · ${money(c.spent)} spent`}
+  else h.innerHTML=d.length===10?'<span style="color:var(--muted)">New customer — will be saved with the bill</span>':'';
+}
+function newOrder(){
+  if(cart.length&&!P.orderId){go('pos');return toast('Finish or clear the current order first','err')}
+  resetPos();go('pos');
+}
+
+/* ---------- Hold / running orders ---------- */
+function holdOrder(silent){
+  const lines=cartLines();if(!lines.length)return false;
+  if(P.type==='Dine-in'&&!P.table.trim()){toast('Enter a table number to hold this order','err');return false}
+  const o=P.orderId&&S.orders.find(x=>x.id===P.orderId);
+  const data={type:P.type,table:P.type==='Dine-in'?P.table.trim():'',cust:P.cust,phone:P.phone,items:cart.map(c=>({...c})),updated:Date.now(),staff:o?.staff||me().name};
+  if(!o&&data.table&&S.orders.some(x=>x.table===data.table)){toast(`Table ${data.table} already has a running order — open it from Running`,'err');return false}
+  if(!silent&&S.settings.kotOnHold&&cart.some(c=>c.qty>(c.kot||0)))printKOT(true);
+  data.items=cart.map(c=>({...c}));
+  if(o)Object.assign(o,data);else S.orders.push({id:uid(),t:Date.now(),...data});
+  save('orders');act(`Held order${data.table?' — Table '+data.table:' — '+data.type} (${money(sum(lines,l=>l.price*l.qty))})`);
+  toast(data.table?`Order saved to Table ${data.table}`:'Order put on hold','ok');
+  resetPos();toggleCart(false);
+  return true;
+}
+function sendOrder(){holdOrder()}
+function openOrder(id){
+  const o=S.orders.find(x=>x.id===id);if(!o)return;
+  const doIt=()=>{cart=o.items.map(i=>({...i}));Object.assign(P,{orderId:o.id,type:o.type,table:o.table,cust:o.cust||'',phone:o.phone||'',dv:'',recv:'',sc:'',su:'',sk:''});saveCart();closeModal();if(cur==='pos'){renderFood();renderCart();toggleCart(true)}else go('pos')};
+  if(cart.length&&P.orderId!==id&&!P.orderId)return confirmDlg('Discard current order?','You have unsaved items in the cart. Hold them first, or discard and open this order.',doIt,'Discard & open');
+  if(P.orderId&&P.orderId!==id&&cart.length){holdOrder(true)}
+  doIt();
+}
+function runningModal(){
+  openModal('Running Orders',S.orders.length?S.orders.slice().sort((a,b)=>a.t-b.t).map(o=>`<div class="list-row" style="cursor:pointer" onclick="openOrder('${o.id}')">
+    <div class="rank" style="width:44px;height:44px;font-size:14px;background:var(--primary-50);color:var(--primary)">${o.table?'T'+esc(o.table):o.type==='Parcel'?'🛍️':'🛵'}</div>
+    <div class="grow"><b>${o.table?'Table '+esc(o.table):o.type}${o.cust?' · '+esc(o.cust):''}</b><small>${sum(o.items,'qty')} items · ${ago(o.t)} · ${esc(o.staff)}</small></div><b>${money(orderSub(o))}</b></div>`).join('')
+    :`<div class="empty">${I('pause',36)}<p>No running orders</p><small>Use “Hold” to save an order to a table</small></div>`,
+    `${can('tables')?`<button class="btn btn-ghost" onclick="go('tables')">${I('grid',16)} Table view</button>`:''}<button class="btn btn-primary" onclick="closeModal()">Close</button>`);
+}
+
+/* ---------- Save bill ---------- */
+function saveBill(print){
+  if(!can('settle'))return toast('You are not allowed to settle bills','err');
+  const lines=cartLines();if(!lines.length)return toast('Add items first','err');
+  for(const id of new Set(lines.map(l=>l.id))){const it=S.items.find(i=>i.id===id),q=sum(lines.filter(l=>l.id===id),'qty');if(it.track&&it.stock<q)return toast(`Only ${it.stock} ${it.name} in stock`,'err')}
+  const t=calc(lines),u=me();let split=null;
+  if(P.pay==='Split'){const sp={Cash:+P.sc||0,UPI:+P.su||0,Card:+P.sk||0};if(Math.abs(sp.Cash+sp.UPI+sp.Card-t.total)>0.01)return toast(`Split amounts must add up to ${money(t.total)}`,'err');split=sp}
+  const recv=P.pay==='Cash'&&parseFloat(P.recv)>=t.total?r2(parseFloat(P.recv)):0;
+  const o=P.orderId&&S.orders.find(x=>x.id===P.orderId);
+  const bill={id:uid(),no:S.settings.prefix+S.settings.next,t:Date.now(),
+    items:lines.map(l=>({id:l.id,name:l.name,price:l.price,qty:l.qty,cat:l.cat,note:l.note})),
+    ...t,pay:P.pay,split,recv,change:recv?r2(recv-t.total):0,type:P.type,table:P.type==='Dine-in'?P.table.trim():'',cust:P.cust.trim(),phone:P.phone.trim(),staff:u.name,staffId:u.id,orderStaff:o?.staff||''};
+  lines.forEach(l=>{const it=S.items.find(i=>i.id===l.id);if(it.track)it.stock-=l.qty});
+  S.bills.push(bill);S.settings.next++;
+  if(o)S.orders=S.orders.filter(x=>x.id!==o.id);
+  upsertCustomer(bill);
+  save('bills','items','settings','orders');
+  if(bill.disc)act(`Gave discount ${money(bill.disc)} on ${bill.no}`);
+  resetPos();toggleCart(false);
+  toast(`Bill ${bill.no} saved · ${money(bill.total)}${bill.change?' · Return '+money(bill.change):''}`,'ok');
+  if(print)printBill(bill);
+}
+function upsertCustomer(b){
+  const d=digits(b.phone);if(d.length<10)return;
+  let c=S.customers.find(x=>digits(x.phone)===d);
+  if(!c){c={id:uid(),name:'',phone:b.phone,visits:0,spent:0,first:b.t,note:''};S.customers.push(c)}
+  if(b.cust)c.name=b.cust;c.visits++;c.spent=r2(c.spent+b.total);c.last=b.t;save('customers');
+}
+
+/* =========================================================
+   PRINT (3 inch / 80mm thermal)
+========================================================= */
+function receiptHTML(b,draft){
+  const s=S.settings,half=r2(b.tax/2),showQr=s.upiId&&s.qrOnBill&&(draft||b.pay==='UPI');
+  const qr=showQr?qrData(upiLink(b.total,'Bill '+b.no)):'';
+  return `<div class="rc">
+    <div class="c h1">${esc(s.name)}</div>
+    ${s.address?`<div class="c">${esc(s.address)}</div>`:''}
+    ${s.phone?`<div class="c">Ph: ${esc(s.phone)}</div>`:''}
+    ${s.gstin?`<div class="c">GSTIN: ${esc(s.gstin)}</div>`:''}
+    <div class="hr"></div>
+    <div class="c big">${b.cancelled?'** CANCELLED **':draft?'ESTIMATE / DRAFT':s.gstin?'TAX INVOICE':'BILL'}</div>
+    <div class="rw"><span>${draft?'Draft':'Bill'}: <b>${esc(b.no)}</b></span><span>${b.type}${b.table?' / T-'+esc(b.table):''}</span></div>
+    <div class="rw"><span>${new Date(b.t).toLocaleDateString('en-IN')}</span><span>${fmtT(b.t)}</span></div>
+    <div class="rw"><span>Staff: ${esc(b.staff)}</span><span>${draft?'':b.pay}</span></div>
+    ${b.cust||b.phone?`<div>Customer: ${esc(b.cust)} ${esc(b.phone)}</div>`:''}
+    <div class="hr"></div>
+    <table><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Rate</th><th class="n">Amt</th></tr></thead>
+    <tbody>${b.items.map(i=>`<tr><td>${esc(i.name)}${s.notesOnBill&&i.note?`<div class="note">(${esc(i.note)})</div>`:''}</td><td class="n">${i.qty}</td><td class="n">${m2(i.price)}</td><td class="n">${m2(i.price*i.qty)}</td></tr>`).join('')}</tbody></table>
+    <div class="hr"></div>
+    <div class="rw"><span>Items: ${b.items.length} | Qty: ${sum(b.items,'qty')}</span><span>Subtotal ${m2(b.sub)}</span></div>
+    ${b.disc?`<div class="rw"><span>Discount</span><span>- ${m2(b.disc)}</span></div>`:''}
+    ${b.svc?`<div class="rw"><span>Service charge @${b.svcP}%</span><span>${m2(b.svc)}</span></div>`:''}
+    ${b.pack?`<div class="rw"><span>Packing charge</span><span>${m2(b.pack)}</span></div>`:''}
+    ${b.tax?`<div class="rw"><span>CGST @${b.gst/2}%</span><span>${m2(half)}</span></div><div class="rw"><span>SGST @${b.gst/2}%</span><span>${m2(r2(b.tax-half))}</span></div>`:''}
+    ${b.round?`<div class="rw"><span>Round off</span><span>${m2(b.round)}</span></div>`:''}
+    <div class="hr"></div>
+    <div class="rw tot"><span>TOTAL</span><span>₹ ${m2(b.total)}</span></div>
+    ${b.split?`<div class="hr"></div>${Object.entries(b.split).filter(x=>x[1]).map(([k,v])=>`<div class="rw"><span>Paid by ${k}</span><span>${m2(v)}</span></div>`).join('')}`:''}
+    ${b.recv?`<div class="rw"><span>Cash received</span><span>${m2(b.recv)}</span></div><div class="rw"><span>Balance returned</span><span>${m2(b.change)}</span></div>`:''}
+    <div class="hr"></div>
+    ${qr?`<img class="qr" src="${qr}" alt=""><div class="c"><b>Scan &amp; pay via UPI</b><br>${esc(s.upiId)}</div><div class="hr"></div>`:''}
+    ${s.footer?`<div class="c" style="margin-top:4px">${esc(s.footer)}</div>`:''}
+  </div>`;
+}
+function doPrint(html){
+  const w=S.settings.paper==='58'?58:80;
+  const pa=$('#printArea');pa.style.width=w+'mm';pa.innerHTML=html;
+  const hmm=Math.ceil(pa.scrollHeight*25.4/96)+4;
+  $('#pageStyle').textContent=`@page{size:${w}mm ${hmm}mm;margin:0}`;
+  setTimeout(()=>{try{window.print()}catch(e){}},80);
+}
+function printBill(b){if(b)doPrint(receiptHTML(b))}
+function printDraft(){
+  const lines=cartLines();if(!lines.length)return;
+  const t=calc(lines);
+  doPrint(receiptHTML({no:P.orderId?'RUNNING':'—',t:Date.now(),items:lines.map(l=>({name:l.name,price:l.price,qty:l.qty,note:l.note})),...t,type:P.type,table:P.type==='Dine-in'?P.table:'',cust:P.cust,phone:P.phone,staff:me().name},true));
+}
+function printKOT(quiet){
+  const lines=cartLines();if(!lines.length)return;
+  const pend=lines.filter(l=>l.qty>l.kot);
+  if(!pend.length){if(!quiet)toast('All items already sent to kitchen','err');return}
+  const add=lines.some(l=>l.kot>0);
+  const s=S.settings.kotNo=(+S.settings.kotNo||0)+1;save('settings');
+  doPrint(`<div class="rc"><div class="c h1">${add?'KOT — ADD ON':'KITCHEN ORDER'}</div><div class="c">KOT #${s}</div><div class="hr"></div>
+    <div class="rw big"><span>${P.type}</span><span>${P.type==='Dine-in'&&P.table?'TABLE '+esc(P.table):''}</span></div>
+    <div class="rw"><span>${new Date().toLocaleDateString('en-IN')} ${fmtT(Date.now())}</span><span>${esc(me().name)}</span></div>
+    <div class="hr"></div><table class="kot"><thead><tr><th>Item</th><th class="n">Qty</th></tr></thead>
+    <tbody>${pend.map(l=>`<tr><td>${esc(l.name)}${l.note?`<div class="note">** ${esc(l.note)} **</div>`:''}</td><td class="n">${l.qty-l.kot}</td></tr>`).join('')}</tbody></table><div class="hr"></div>
+    <div class="c">Total items: ${sum(pend,l=>l.qty-l.kot)}</div></div>`);
+  cart.forEach(c=>c.kot=c.qty);saveCart();
+  const o=P.orderId&&S.orders.find(x=>x.id===P.orderId);if(o){o.items=cart.map(c=>({...c}));save('orders')}
+  if(!quiet){toast('KOT sent to kitchen','ok');renderCart()}
+}
+
+/* =========================================================
+   TABLES & RUNNING ORDERS
+========================================================= */
+PAGES.tables=function(){
+  const n=+S.settings.tables||0,tbl=Array.from({length:n},(_,i)=>String(i+1));
+  S.orders.filter(o=>o.type==='Dine-in'&&o.table&&!tbl.includes(o.table)).forEach(o=>tbl.push(o.table));
+  const byT=t=>S.orders.find(o=>o.type==='Dine-in'&&o.table===t);
+  const busy=tbl.filter(byT).length,others=S.orders.filter(o=>o.type!=='Dine-in');
+  $('#view').innerHTML=`
+  <div class="page-head"><div><h2>Tables &amp; Running Orders</h2><p>Tap a free table to start an order · tap an occupied table to add items or settle</p></div>
+    <div class="actions"><button class="btn btn-ghost" onclick="newTypeOrder('Parcel')">${I('bag',16)} Parcel order</button><button class="btn btn-primary" onclick="newOrder()">${I('plus',16)} Quick bill</button></div></div>
+  <div class="kpis">
+    ${kpi('Occupied Tables',busy,`of ${tbl.length} tables`,'','grid','orange')}
+    ${kpi('Free Tables',tbl.length-busy,'Ready for guests','','check','green')}
+    ${kpi('Parcel / Delivery',others.length,'Running takeaway orders','','bag','violet')}
+    ${kpi('Unbilled Amount',money(sum(S.orders,orderSub)),'Across all running orders','','wallet','blue')}
+  </div>
+  <div class="card-h"><h3>Dining Tables</h3><div class="legend"><span><i style="background:var(--green)"></i>Free</span><span><i style="background:var(--primary)"></i>Occupied</span></div></div>
+  ${tbl.length?`<div class="tables">${tbl.map(t=>{const o=byT(t);return o?
+    `<button class="tcard busy" onclick="openOrder('${o.id}')"><span class="dot"></span><span class="tn">T${esc(t)}</span><small>${sum(o.items,'qty')} items · ${ago(o.t)}</small><small>${esc(o.cust||o.staff)}</small><span class="amt">${money(orderSub(o))}</span></button>`:
+    `<button class="tcard" onclick="tableOrder('${esc(t)}')"><span class="dot"></span><span class="tn">T${esc(t)}</span><small>Available</small><span class="amt muted" style="font-size:13px;font-weight:600">+ New order</span></button>`}).join('')}</div>`:`<div class="card empty">${I('grid',36)}<p>No tables configured</p><small>Set the number of tables in Settings</small></div>`}
+  <div class="section-t">${I('bag',18)} Parcel &amp; Delivery orders</div>
+  ${others.length?`<div class="tables">${others.map(o=>`<button class="tcard busy" onclick="openOrder('${o.id}')"><span class="dot"></span><span class="tn" style="font-size:18px">${o.type==='Parcel'?'🛍️':'🛵'} ${o.type}</span><small>${esc(o.cust||'Walk-in')} · ${sum(o.items,'qty')} items</small><small>${ago(o.t)} · ${esc(o.staff)}</small><span class="amt">${money(orderSub(o))}</span></button>`).join('')}</div>`:`<div class="card empty" style="padding:24px">${I('bag',30)}<p>No parcel orders running</p></div>`}`;
+};
+function tableOrder(t){
+  if(cart.length&&!P.orderId)return confirmDlg('Discard current cart?','You have unsaved items in the billing cart.',()=>{resetPos();tableOrder(t)},'Discard');
+  resetPos();P.type='Dine-in';P.table=t;saveCart();go('pos');
+}
+function newTypeOrder(type){
+  if(cart.length&&!P.orderId)return confirmDlg('Discard current cart?','You have unsaved items in the billing cart.',()=>{resetPos();newTypeOrder(type)},'Discard');
+  resetPos();P.type=type;saveCart();go('pos');
+}
+
+/* =========================================================
+   BILLS & REPORTS
+========================================================= */
+let BF=null;
+PAGES.bills=function(){
+  if(!BF)BF={from:dkey(Date.now()),to:dkey(Date.now()),q:'',pay:'all',tab:'bills'};
+  $('#view').innerHTML=`
+  <div class="page-head"><div><h2>Bills &amp; Reports</h2><p>Search, reprint, share and analyse your sales</p></div>
+    <div class="actions"><button class="btn btn-ghost" onclick="printDayReport()">${I('printer',16)} Print Sales Report</button><button class="btn btn-ghost" onclick="exportCSV()">${I('download',16)} Export CSV</button></div></div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="chips" style="padding:0 0 12px">${QUICK.map(([k,l])=>`<button class="chip sm" onclick="[BF.from,BF.to]=rangeOf('${k}');PAGES.bills()">${l}</button>`).join('')}</div>
+    <div class="toolbar" style="margin:0">
+      <input type="date" class="input" id="bfFrom" value="${BF.from}" style="width:auto">
+      <span class="muted">to</span>
+      <input type="date" class="input" id="bfTo" value="${BF.to}" style="width:auto">
+      <select class="input" id="bfPay">${['all','Cash','UPI','Card','Split'].map(p=>`<option value="${p}" ${BF.pay===p?'selected':''}>${p==='all'?'All payments':p}</option>`).join('')}</select>
+      <div class="search">${I('search')}<input id="bfQ" placeholder="Bill no / customer / phone" value="${esc(BF.q)}"></div>
+    </div>
+  </div>
+  <div class="kpis" id="billSum"></div>
+  <div class="tabs">${[['bills','All Bills'],['items','Item-wise'],['cats','Category-wise'],['staff','Staff-wise'],['days','Day-wise']].map(([k,l])=>`<button class="${BF.tab===k?'on':''}" onclick="BF.tab='${k}';PAGES.bills()">${l}</button>`).join('')}</div>
+  <div class="card p0" id="billList"></div>`;
+  $('#bfFrom').onchange=e=>{BF.from=e.target.value;renderBills()};
+  $('#bfTo').onchange=e=>{BF.to=e.target.value;renderBills()};
+  $('#bfPay').onchange=e=>{BF.pay=e.target.value;renderBills()};
+  $('#bfQ').oninput=e=>{BF.q=e.target.value;renderBills()};
+  renderBills();
+};
+function filteredBills(){
+  const q=BF.q.trim().toLowerCase();
+  return S.bills.filter(b=>inRange(b.t,BF.from,BF.to)&&(BF.pay==='all'||b.pay===BF.pay)&&(!q||(b.no+' '+b.cust+' '+b.phone).toLowerCase().includes(q))).sort((a,b)=>b.t-a.t);
+}
+const tbl=(head,rows)=>`<div class="table-wrap"><table class="table"><thead><tr>${head.map(h=>`<th class="${h[1]||''}">${h[0]}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table></div>`;
+function renderBills(){
+  const all=filteredBills(),valid=all.filter(b=>!b.cancelled),tot=sum(valid,'total');
+  $('#billSum').innerHTML=
+    kpi('Total Sales',money(tot),`${valid.length} bills${all.length-valid.length?` · ${all.length-valid.length} cancelled`:''}`,'','trend','orange')+
+    kpi('Cash',money(sum(valid,b=>payAmt(b,'Cash'))),`Avg bill ${money(valid.length?tot/valid.length:0)}`,'','wallet','green')+
+    kpi('UPI / Card',money(sum(valid,b=>payAmt(b,'UPI')+payAmt(b,'Card'))),`UPI ${money(sum(valid,b=>payAmt(b,'UPI')))} · Card ${money(sum(valid,b=>payAmt(b,'Card')))}`,'','qr','violet')+
+    kpi('GST / Discount',money(sum(valid,'tax')),`Discount given ${money(sum(valid,'disc'))}`,'','tag','blue');
+  const L=$('#billList'),E=`<div class="empty">${I('receipt',40)}<p>No bills in this period</p><small>Change the date range or create a new bill</small></div>`;
+  const agg=(keyFn,valFn)=>{const a={};valid.forEach(b=>keyFn(b).forEach(([k,meta,q,amt])=>{a[k]=a[k]||{...meta,q:0,a:0,n:0};a[k].q+=q;a[k].a+=amt;a[k].n++}));return Object.values(a).sort((x,y)=>y.a-x.a)};
+  if(BF.tab==='items'){
+    const rows=agg(b=>b.items.map(i=>[i.id,{name:i.name,c:catOf(i.cat)?.name||'-'},i.qty,i.qty*i.price]));
+    L.innerHTML=rows.length?tbl([['#'],['Item'],['Category'],['Qty sold','r'],['Amount','r'],['Share','r']],rows.map((r,i)=>`<tr><td class="muted">${i+1}</td><td><b>${esc(r.name)}</b></td><td>${esc(r.c)}</td><td class="r">${r.q}</td><td class="r"><b>${money(r.a)}</b></td><td class="r muted">${(r.a/Math.max(1,sum(rows,'a'))*100).toFixed(1)}%</td></tr>`).join('')):E;return;
+  }
+  if(BF.tab==='cats'){
+    const rows=agg(b=>b.items.map(i=>{const c=catOf(i.cat);return [i.cat||'x',{name:c?c.emoji+' '+c.name:'Other'},i.qty,i.qty*i.price]}));const T=sum(rows,'a')||1;
+    L.innerHTML=rows.length?tbl([['Category'],['Qty sold','r'],['Amount','r'],['Share']],rows.map(r=>`<tr><td><b>${esc(r.name)}</b></td><td class="r">${r.q}</td><td class="r"><b>${money(r.a)}</b></td><td style="min-width:160px"><div class="prog" style="margin:0"><i style="width:${r.a/T*100}%;background:var(--primary)"></i></div></td></tr>`).join('')):E;return;
+  }
+  if(BF.tab==='staff'){
+    const rows=agg(b=>[[b.staff,{name:b.staff},1,b.total]]);
+    L.innerHTML=rows.length?tbl([['Staff'],['Bills','r'],['Avg bill','r'],['Sales','r']],rows.map(r=>`<tr><td><div style="display:flex;align-items:center;gap:10px">${avatar(r.name,'width:30px;height:30px;font-size:12px')}<b>${esc(r.name)}</b></div></td><td class="r">${r.n}</td><td class="r">${money(r.a/r.n)}</td><td class="r"><b>${money(r.a)}</b></td></tr>`).join('')):E;return;
+  }
+  if(BF.tab==='days'){
+    const rows=agg(b=>[[dkey(b.t),{name:fmtD(b.t),k:dkey(b.t),cash:0},1,b.total]]).sort((a,b)=>b.k.localeCompare(a.k));
+    L.innerHTML=rows.length?tbl([['Date'],['Bills','r'],['Cash','r'],['UPI','r'],['Card','r'],['Total','r']],rows.map(r=>{const vb=valid.filter(b=>dkey(b.t)===r.k);return `<tr><td><b>${r.name}</b></td><td class="r">${r.n}</td><td class="r">${money(sum(vb,b=>payAmt(b,'Cash')))}</td><td class="r">${money(sum(vb,b=>payAmt(b,'UPI')))}</td><td class="r">${money(sum(vb,b=>payAmt(b,'Card')))}</td><td class="r"><b>${money(r.a)}</b></td></tr>`}).join('')):E;return;
+  }
+  const pc={Cash:'green',UPI:'violet',Card:'blue',Split:'amber'};
+  L.innerHTML=all.length?tbl([['Bill No'],['Date &amp; Time'],['Order'],['Customer'],['Staff'],['Payment'],['Amount','r'],['Actions','r']],
+    all.map(b=>`<tr class="${b.cancelled?'cancel':''}"><td><b>${esc(b.no)}</b> ${b.cancelled?'<span class="badge red">Cancelled</span>':''}</td><td>${fmtDT(b.t)}</td><td>${b.type}${b.table?' · T'+esc(b.table):''}<div class="muted" style="font-size:12px">${sum(b.items,'qty')} items</div></td><td>${esc(b.cust)||'<span class="muted">—</span>'}${b.phone?`<div class="muted" style="font-size:12px">${esc(b.phone)}</div>`:''}</td><td>${esc(b.staff)}</td><td><span class="badge ${pc[b.pay]}">${b.pay}</span></td><td class="r"><b>${money(b.total)}</b></td>
+    <td><div class="acts"><button class="icon-btn sm" title="View" onclick="viewBill('${b.id}')">${I('eye',16)}</button><button class="icon-btn sm" title="Reprint" onclick="printBill(S.bills.find(x=>x.id==='${b.id}'))">${I('printer',16)}</button><button class="icon-btn sm" title="WhatsApp" onclick="waBill('${b.id}')">${I('msg',16)}</button>${can('deleteBill')&&!b.cancelled?`<button class="icon-btn sm danger" title="Cancel bill" onclick="cancelBill('${b.id}')">${I('x',16)}</button>`:''}</div></td></tr>`).join('')):E;
+}
+function viewBill(id){
+  const b=S.bills.find(x=>x.id===id);if(!b)return;
+  openModal(`Bill ${esc(b.no)}`,`<div class="rc-preview">${receiptHTML(b)}</div>${b.cancelled?`<p class="muted" style="text-align:center;margin-top:12px;font-size:12px">Cancelled by ${esc(b.cancelledBy)} on ${fmtDT(b.cancelledAt)}</p>`:''}`,
+    `${can('deleteBill')&&!b.cancelled?`<button class="btn btn-ghost" style="color:var(--red);margin-right:auto" onclick="closeModal();cancelBill('${b.id}')">Cancel bill</button>`:''}<button class="btn btn-green" onclick="waBill('${b.id}')">${I('msg',16)} WhatsApp</button><button class="btn btn-primary" onclick="printBill(S.bills.find(x=>x.id==='${b.id}'))">${I('printer',16)} Print</button>`,{w:440});
+}
+function billText(b){
+  const s=S.settings;
+  return `*${s.name}*\nBill: ${b.no}\nDate: ${fmtDT(b.t)}\n----------------------\n`+
+    b.items.map(i=>`${i.qty} x ${i.name} = ₹${m2(i.qty*i.price)}`).join('\n')+
+    `\n----------------------\n`+(b.disc?`Discount: -₹${m2(b.disc)}\n`:'')+(b.tax?`GST: ₹${m2(b.tax)}\n`:'')+`*Total: ₹${m2(b.total)}* (${b.pay})\n\n${s.footer||'Thank you!'}`;
+}
+function waBill(id){
+  const b=S.bills.find(x=>x.id===id);if(!b)return;
+  let ph=digits(b.phone);if(ph.length===10)ph='91'+ph;
+  window.open(`https://wa.me/${ph}?text=${encodeURIComponent(billText(b))}`,'_blank');
+}
+function cancelBill(id){
+  const b=S.bills.find(x=>x.id===id);if(!b)return;
+  confirmDlg('Cancel bill '+esc(b.no)+'?','The bill stays in records as <b>Cancelled</b>, is excluded from sales, and tracked stock is returned.',()=>{
+    b.cancelled=true;b.cancelledBy=me().name;b.cancelledAt=Date.now();
+    b.items.forEach(i=>{const it=S.items.find(x=>x.id===i.id);if(it&&it.track)it.stock+=i.qty});
+    const c=digits(b.phone).length===10&&S.customers.find(x=>digits(x.phone)===digits(b.phone));
+    if(c){c.visits=Math.max(0,c.visits-1);c.spent=r2(Math.max(0,c.spent-b.total));save('customers')}
+    save('bills','items');act(`Cancelled bill ${b.no} (${money(b.total)})`);toast('Bill cancelled','ok');renderShell();if(cur==='bills')renderBills();else go(cur);
+  },'Cancel bill');
+}
+function printDayReport(){
+  const v=filteredBills().filter(b=>!b.cancelled),cn=filteredBills().length-v.length;
+  const ex=S.expenses.filter(e=>inRange(e.t,BF.from,BF.to)),exT=sum(ex,'amount'),tot=sum(v,'total');
+  const cats={},items={};v.forEach(b=>b.items.forEach(i=>{const n=catOf(i.cat)?.name||'Other';cats[n]=(cats[n]||0)+i.qty*i.price;items[i.name]=items[i.name]||{q:0,a:0};items[i.name].q+=i.qty;items[i.name].a+=i.qty*i.price}));
+  const row=(a,b)=>`<div class="rw"><span>${a}</span><span>${b}</span></div>`;
+  const period=BF.from===BF.to?new Date(BF.from).toLocaleDateString('en-IN'):`${new Date(BF.from).toLocaleDateString('en-IN')} - ${new Date(BF.to).toLocaleDateString('en-IN')}`;
+  doPrint(`<div class="rc"><div class="c h1">${esc(S.settings.name)}</div><div class="c big">SALES REPORT</div><div class="c">${period}</div>
+    <div class="c">Printed ${fmtDT(Date.now())} by ${esc(me().name)}</div><div class="hr"></div>
+    ${row('Total bills',v.length)}${row('Cancelled bills',cn)}${row('Gross (items)',m2(sum(v,'sub')))}${row('Discount','- '+m2(sum(v,'disc')))}
+    ${sum(v,'svc')?row('Service charge',m2(sum(v,'svc'))):''}${sum(v,'pack')?row('Packing charge',m2(sum(v,'pack'))):''}${row('GST',m2(sum(v,'tax')))}
+    <div class="hr"></div><div class="rw tot"><span>NET SALES</span><span>₹ ${m2(tot)}</span></div><div class="hr"></div>
+    <div class="sec">Payment-wise</div>${['Cash','UPI','Card'].map(p=>row(p,m2(sum(v,b=>payAmt(b,p))))).join('')}
+    <div class="hr"></div><div class="sec">Category-wise</div>${Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([k,a])=>row(esc(k),m2(a))).join('')||'-'}
+    <div class="hr"></div><div class="sec">Item-wise</div>
+    <table><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Amt</th></tr></thead><tbody>${Object.entries(items).sort((a,b)=>b[1].a-a[1].a).map(([n,x])=>`<tr><td>${esc(n)}</td><td class="n">${x.q}</td><td class="n">${m2(x.a)}</td></tr>`).join('')}</tbody></table>
+    ${can('expenses')?`<div class="hr"></div>${row('Expenses','- '+m2(exT))}<div class="rw big"><span>Net (Sales - Exp)</span><span>${m2(tot-exT)}</span></div>`:''}
+    <div class="hr"></div><div class="c">*** End of report ***</div></div>`);
+}
+function exportCSV(){
+  const rows=[['Bill No','Date','Time','Order Type','Table','Customer','Phone','Items','Subtotal','Discount','Service','Packing','GST','Round Off','Total','Payment','Cash','UPI','Card','Staff','Status']];
+  filteredBills().forEach(b=>rows.push([b.no,new Date(b.t).toLocaleDateString('en-IN'),fmtT(b.t),b.type,b.table,b.cust,b.phone,b.items.map(i=>i.name+' x'+i.qty).join('; '),b.sub,b.disc,b.svc||0,b.pack||0,b.tax,b.round,b.total,b.pay,payAmt(b,'Cash'),payAmt(b,'UPI'),payAmt(b,'Card'),b.staff,b.cancelled?'Cancelled':'Paid']));
+  downloadCSV(`sales_${BF.from}_to_${BF.to}.csv`,rows);
+}
+const downloadCSV=(name,rows)=>download(name,rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n'),'text/csv');
+function download(name,data,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+data],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+
+/* =========================================================
+   CUSTOMERS
+========================================================= */
+let CF={q:'',sort:'spent'};
+PAGES.customers=function(){
+  const C=S.customers,mStart=new Date(new Date().getFullYear(),new Date().getMonth(),1).getTime();
+  $('#view').innerHTML=`
+  <div class="page-head"><div><h2>Customers</h2><p>Customers are saved automatically when a phone number is entered on a bill</p></div>
+    <div class="actions"><button class="btn btn-ghost" onclick="downloadCSV('customers.csv',[['Name','Phone','Visits','Total Spent','Last Visit','Note'],...S.customers.map(c=>[c.name,c.phone,c.visits,c.spent,c.last?fmtD(c.last):'',c.note])])">${I('download',16)} Export</button><button class="btn btn-primary" onclick="custModal()">${I('plus',16)} Add Customer</button></div></div>
+  <div class="kpis">
+    ${kpi('Total Customers',C.length,`${C.filter(c=>c.first>=mStart).length} new this month`,'','heart','orange')}
+    ${kpi('Repeat Customers',C.filter(c=>c.visits>1).length,`${C.length?Math.round(C.filter(c=>c.visits>1).length/C.length*100):0}% come back`,'','users','violet')}
+    ${kpi('Avg. Spend',money(C.length?sum(C,'spent')/C.length:0),'Per customer (lifetime)','','wallet','green')}
+    ${kpi('Top Customer',esc(([...C].sort((a,b)=>b.spent-a.spent)[0]?.name)||'—'),C.length?money(Math.max(...C.map(c=>c.spent))):'No data','','star','amber')}
+  </div>
+  <div class="toolbar"><div class="search">${I('search')}<input id="cfQ" placeholder="Search name or phone" value="${esc(CF.q)}"></div>
+    <select class="input" id="cfSort">${[['spent','Top spenders'],['visits','Most visits'],['last','Recent visit'],['name','Name A–Z']].map(([k,l])=>`<option value="${k}" ${CF.sort===k?'selected':''}>${l}</option>`).join('')}</select></div>
+  <div class="card p0" id="custList"></div>`;
+  $('#cfQ').oninput=e=>{CF.q=e.target.value;drawCust()};$('#cfSort').onchange=e=>{CF.sort=e.target.value;drawCust()};
+  drawCust();
+};
+function drawCust(){
+  const q=CF.q.toLowerCase();
+  const list=S.customers.filter(c=>(c.name+' '+c.phone).toLowerCase().includes(q)).sort((a,b)=>CF.sort==='name'?a.name.localeCompare(b.name):(b[CF.sort]||0)-(a[CF.sort]||0));
+  $('#custList').innerHTML=list.length?tbl([['Customer'],['Phone'],['Visits','r'],['Total spent','r'],['Last visit'],['Actions','r']],list.map(c=>`<tr>
+    <td><div style="display:flex;align-items:center;gap:10px">${avatar(c.name||c.phone,'width:34px;height:34px;font-size:12px')}<div><b>${esc(c.name)||'<span class="muted">No name</span>'}</b>${c.visits>=5?' <span class="badge amber">⭐ Regular</span>':''}${c.note?`<div class="muted" style="font-size:12px">${esc(c.note)}</div>`:''}</div></div></td>
+    <td>${esc(c.phone)}</td><td class="r">${c.visits}</td><td class="r"><b>${money(c.spent)}</b></td><td>${c.last?fmtD(c.last):'—'}</td>
+    <td><div class="acts"><button class="icon-btn sm" title="Bill history" onclick="custHistory('${c.id}')">${I('history',16)}</button><button class="icon-btn sm" title="WhatsApp" onclick="window.open('https://wa.me/91${digits(c.phone)}','_blank')">${I('msg',16)}</button><button class="icon-btn sm" onclick="custModal('${c.id}')">${I('edit',16)}</button><button class="icon-btn sm danger" onclick="delCust('${c.id}')">${I('trash',16)}</button></div></td></tr>`).join(''))
+    :`<div class="empty">${I('heart',40)}<p>No customers yet</p><small>Enter a phone number while billing to save customers</small></div>`;
+}
+function custModal(id){
+  const c=id?S.customers.find(x=>x.id===id):{name:'',phone:'',note:''};
+  openModal(id?'Edit Customer':'Add Customer',`<div class="field"><label>Name</label><input class="input" id="cuName" value="${esc(c.name)}" autofocus></div>
+    <div class="field"><label>Phone (10 digits) *</label><input class="input" id="cuPhone" inputmode="tel" value="${esc(c.phone)}"></div>
+    <div class="field"><label>Note</label><input class="input" id="cuNote" value="${esc(c.note||'')}" placeholder="e.g. Prefers less spicy, birthday 12 Mar"></div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveCust('${id||''}')">Save</button>`,{sm:true});
+}
+function saveCust(id){
+  const d={name:$('#cuName').value.trim(),phone:$('#cuPhone').value.trim(),note:$('#cuNote').value.trim()};
+  if(digits(d.phone).length!==10)return toast('Enter a valid 10-digit phone','err');
+  if(S.customers.some(c=>digits(c.phone)===digits(d.phone)&&c.id!==id))return toast('Customer with this phone already exists','err');
+  if(id)Object.assign(S.customers.find(x=>x.id===id),d);else S.customers.push({id:uid(),...d,visits:0,spent:0,first:Date.now()});
+  save('customers');closeModal();toast('Customer saved','ok');PAGES.customers();
+}
+function delCust(id){confirmDlg('Delete customer?','Their bills are kept; only the customer record is removed.',()=>{S.customers=S.customers.filter(x=>x.id!==id);save('customers');PAGES.customers()})}
+function custHistory(id){
+  const c=S.customers.find(x=>x.id===id),bs=S.bills.filter(b=>digits(b.phone)===digits(c.phone)).sort((a,b)=>b.t-a.t);
+  const fav={};bs.filter(b=>!b.cancelled).forEach(b=>b.items.forEach(i=>fav[i.name]=(fav[i.name]||0)+i.qty));
+  const favs=Object.entries(fav).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  openModal(`${esc(c.name||c.phone)} — History`,`${favs.length?`<p class="muted" style="font-size:12.5px;margin-bottom:6px">Favourite items</p><div class="tagrow" style="margin:0 0 14px">${favs.map(([n,q])=>`<span class="badge orange">${esc(n)} × ${q}</span>`).join('')}</div>`:''}
+    ${bs.length?bs.map(b=>`<div class="list-row" style="cursor:pointer" onclick="viewBill('${b.id}')"><div class="rank">${I('receipt',14)}</div><div class="grow"><b>${esc(b.no)}</b> ${b.cancelled?'<span class="badge red">Cancelled</span>':''}<small>${fmtDT(b.t)} · ${sum(b.items,'qty')} items</small></div><b>${money(b.total)}</b></div>`).join(''):`<div class="empty"><p>No bills yet</p></div>`}`,
+    `<button class="btn btn-primary" onclick="closeModal()">Close</button>`);
+}
+
+/* =========================================================
+   EXPENSES
+========================================================= */
+let EF=null;
+PAGES.expenses=function(){
+  if(!EF){const[f,t]=rangeOf('month');EF={from:f,to:t,cat:'all'}}
+  const ex=S.expenses.filter(e=>inRange(e.t,EF.from,EF.to)&&(EF.cat==='all'||e.cat===EF.cat)).sort((a,b)=>b.t-a.t);
+  const exAll=S.expenses.filter(e=>inRange(e.t,EF.from,EF.to));
+  const sales=sum(S.bills.filter(b=>!b.cancelled&&inRange(b.t,EF.from,EF.to)),'total'),exT=sum(exAll,'amount'),profit=sales-exT;
+  const byCat={};exAll.forEach(e=>byCat[e.cat]=(byCat[e.cat]||0)+e.amount);const cats=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  $('#view').innerHTML=`
+  <div class="page-head"><div><h2>Expenses &amp; Profit</h2><p>Record daily spending and see your real profit</p></div>
+    <div class="actions"><button class="btn btn-ghost" onclick="downloadCSV('expenses_${EF.from}_${EF.to}.csv',[['Date','Category','Amount','Paid via','Note','Added by'],...S.expenses.filter(e=>inRange(e.t,EF.from,EF.to)).map(e=>[fmtD(e.t),e.cat,e.amount,e.pay,e.note,e.by])])">${I('download',16)} Export</button><button class="btn btn-primary" onclick="expModal()">${I('plus',16)} Add Expense</button></div></div>
+  <div class="card" style="margin-bottom:16px">
+    <div class="chips" style="padding:0 0 12px">${QUICK.map(([k,l])=>`<button class="chip sm" onclick="[EF.from,EF.to]=rangeOf('${k}');PAGES.expenses()">${l}</button>`).join('')}</div>
+    <div class="toolbar" style="margin:0"><input type="date" class="input" value="${EF.from}" style="width:auto" onchange="EF.from=this.value;PAGES.expenses()"><span class="muted">to</span><input type="date" class="input" value="${EF.to}" style="width:auto" onchange="EF.to=this.value;PAGES.expenses()">
+    <select class="input" onchange="EF.cat=this.value;PAGES.expenses()"><option value="all">All categories</option>${EXP_CATS.map(c=>`<option ${EF.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
+  </div>
+  <div class="kpis">
+    ${kpi('Sales',money(sales),'In selected period','','trend','orange')}
+    ${kpi('Expenses',money(exT),`${exAll.length} entries`,'','coins','red')}
+    ${kpi('Net Profit',money(profit),sales?`${(profit/sales*100).toFixed(1)}% margin`:'—',profit>=0?'up':'down','wallet',profit>=0?'green':'red')}
+    ${kpi('Biggest Expense',cats[0]?esc(cats[0][0]):'—',cats[0]?money(cats[0][1]):'No expenses','','alert','amber')}
+  </div>
+  <div class="dash-grid">
+    <div class="card span2 p0">${ex.length?tbl([['Date'],['Category'],['Note'],['Paid via'],['By'],['Amount','r'],['','r']],ex.map(e=>`<tr><td>${fmtD(e.t)}</td><td><span class="badge">${esc(e.cat)}</span></td><td>${esc(e.note)||'<span class="muted">—</span>'}</td><td>${esc(e.pay)}</td><td>${esc(e.by)}</td><td class="r"><b>${money(e.amount)}</b></td><td><div class="acts"><button class="icon-btn sm" onclick="expModal('${e.id}')">${I('edit',16)}</button><button class="icon-btn sm danger" onclick="delExp('${e.id}')">${I('trash',16)}</button></div></td></tr>`).join('')):`<div class="empty">${I('coins',40)}<p>No expenses in this period</p><small>Add gas, vegetables, salary, rent…</small></div>`}</div>
+    <div class="card"><div class="card-h"><h3>By Category</h3></div>${cats.length?cats.map(([c,a])=>`<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;font-size:13.5px"><b>${esc(c)}</b><b>${money(a)}</b></div><div class="prog"><i style="width:${a/exT*100}%;background:var(--red)"></i></div></div>`).join(''):`<div class="empty"><p>No data</p></div>`}</div>
+  </div>`;
+};
+function expModal(id){
+  const e=id?S.expenses.find(x=>x.id===id):{t:Date.now(),cat:'Groceries',amount:'',pay:'Cash',note:''};
+  openModal(id?'Edit Expense':'Add Expense',`
+    <div class="grid2"><div class="field"><label>Date</label><input class="input" type="date" id="exD" value="${dkey(e.t)}"></div>
+    <div class="field"><label>Amount (₹) *</label><input class="input" type="number" min="0" step="any" inputmode="decimal" id="exA" value="${e.amount}" autofocus></div></div>
+    <div class="grid2"><div class="field"><label>Category</label><select class="input" id="exC">${EXP_CATS.map(c=>`<option ${e.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
+    <div class="field"><label>Paid via</label><select class="input" id="exP">${['Cash','UPI','Card','Bank'].map(p=>`<option ${e.pay===p?'selected':''}>${p}</option>`).join('')}</select></div></div>
+    <div class="field"><label>Note</label><input class="input" id="exN" value="${esc(e.note)}" placeholder="e.g. 2 gas cylinders, Koyambedu vegetables"></div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveExp('${id||''}')">Save</button>`,{sm:true});
+}
+function saveExp(id){
+  const amount=parseFloat($('#exA').value);if(!(amount>0))return toast('Enter amount','err');
+  const d=$('#exD').value,isToday=d===dkey(Date.now());
+  const data={t:isToday?Date.now():new Date(d+'T12:00:00').getTime(),cat:$('#exC').value,amount:r2(amount),pay:$('#exP').value,note:$('#exN').value.trim()};
+  if(id)Object.assign(S.expenses.find(x=>x.id===id),data);else{S.expenses.push({id:uid(),...data,by:me().name});act(`Added expense ${money(amount)} (${data.cat})`)}
+  save('expenses');closeModal();toast('Expense saved','ok');PAGES.expenses();
+}
+function delExp(id){const e=S.expenses.find(x=>x.id===id);confirmDlg('Delete expense?',`${money(e.amount)} — ${esc(e.cat)}`,()=>{S.expenses=S.expenses.filter(x=>x.id!==id);save('expenses');act(`Deleted expense ${money(e.amount)} (${e.cat})`);PAGES.expenses()})}
+
+/* =========================================================
+   MENU & FOOD
+========================================================= */
+let MF={tab:'items',q:'',cat:'all'},tmpImg='',tmpEmoji='';
+PAGES.menu=function(){
+  $('#view').innerHTML=`
+  <div class="page-head"><div><h2>Menu &amp; Food</h2><p>${S.items.length} food items in ${S.categories.length} categories</p></div>
+    <div class="actions"><button class="btn btn-ghost" onclick="priceModal()">${I('tag',16)} Bulk price update</button><button class="btn btn-ghost" onclick="catModal()">${I('plus',16)} Category</button><button class="btn btn-primary" onclick="itemModal()">${I('plus',16)} Add Food</button></div></div>
+  <div class="tabs">${[['items','Food Items'],['cats','Categories']].map(([k,l])=>`<button class="${MF.tab===k?'on':''}" onclick="MF.tab='${k}';PAGES.menu()">${l}</button>`).join('')}</div>
+  <div id="menuBody"></div>`;
+  MF.tab==='items'?renderMenuItems():renderCatList();
+};
+function renderMenuItems(){
+  $('#menuBody').innerHTML=`<div class="toolbar"><div class="search">${I('search')}<input id="mfQ" placeholder="Search food items or code" value="${esc(MF.q)}"></div>
+    <select class="input" id="mfCat"><option value="all">All categories</option>${S.categories.map(c=>`<option value="${c.id}" ${MF.cat===c.id?'selected':''}>${c.emoji} ${esc(c.name)}</option>`).join('')}</select></div><div id="mfGrid"></div>`;
+  $('#mfQ').oninput=e=>{MF.q=e.target.value;drawMenuGrid()};
+  $('#mfCat').onchange=e=>{MF.cat=e.target.value;drawMenuGrid()};
+  drawMenuGrid();
+}
+function drawMenuGrid(){
+  const q=MF.q.toLowerCase(),list=S.items.filter(i=>(MF.cat==='all'||i.cat===MF.cat)&&(i.name.toLowerCase().includes(q)||(i.code||'')===q));
+  $('#mfGrid').innerHTML=list.length?`<div class="menu-grid">${list.map(i=>`<div class="mcard ${i.active?'':'off'}">
+    <div class="food-img">${thumb(i)}${i.code?`<span class="code">#${esc(i.code)}</span>`:''}${!i.active?'<span class="soldout">Hidden</span>':''}</div>
+    <div class="mcard-b"><div class="t"><i class="vd ${i.veg?'':'nv'}"></i>${esc(i.name)}</div>
+      <div class="meta"><b>${money(i.price)}</b><span class="badge">${catOf(i.cat)?.emoji||''} ${esc(catOf(i.cat)?.name||'—')}</span></div></div>
+    <div class="mcard-f"><label class="lbl"><span class="switch"><input type="checkbox" ${i.active?'checked':''} onchange="toggleItem('${i.id}',this.checked)"><span></span></span>${i.active?'Available':'Hidden'}</label>
+      <button class="icon-btn sm" onclick="itemModal('${i.id}')" title="Edit">${I('edit',16)}</button><button class="icon-btn sm danger" onclick="delItem('${i.id}')" title="Delete">${I('trash',16)}</button></div></div>`).join('')}</div>`
+    :`<div class="card empty">${I('menu',40)}<p>No food items</p><small>Click “Add Food” to create one</small></div>`;
+}
+function toggleItem(id,v){const i=S.items.find(x=>x.id===id);i.active=v;save('items');drawMenuGrid()}
+function itemModal(id){
+  if(!S.categories.length){toast('Create a category first','err');return catModal()}
+  const nextCode=String(Math.max(100,...S.items.map(i=>parseInt(i.code)||0))+1);
+  const it=id?S.items.find(x=>x.id===id):{name:'',code:nextCode,cat:MF.cat!=='all'?MF.cat:S.categories[0].id,price:'',veg:true,track:false,stock:0,low:5,active:true,img:''};
+  tmpImg=it.img||'';
+  openModal(id?'Edit Food Item':'Add Food Item',`
+    <div class="img-pick" id="imgPick" onclick="$('#imgFile').click()"></div>
+    <input type="file" id="imgFile" accept="image/*" hidden onchange="pickImg(this)">
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px"><small class="muted">Photo is auto-resized to save space</small><a id="imgRm" onclick="tmpImg='';drawImgPick()" style="font-size:12.5px;color:var(--red)">Remove photo</a></div>
+    <div class="grid2" style="grid-template-columns:2fr 1fr"><div class="field"><label>Food name *</label><input class="input" id="fName" value="${esc(it.name)}" placeholder="e.g. Chicken Biryani" autofocus></div>
+    <div class="field"><label>Short code</label><input class="input" id="fCode" value="${esc(it.code||'')}" placeholder="101"></div></div>
+    <div class="grid2">
+      <div class="field"><label>Category *</label><select class="input" id="fCat">${S.categories.map(c=>`<option value="${c.id}" ${it.cat===c.id?'selected':''}>${c.emoji} ${esc(c.name)}</option>`).join('')}</select></div>
+      <div class="field"><label>Price (₹) *</label><input class="input" id="fPrice" type="number" min="0" step="0.5" inputmode="decimal" value="${it.price}"></div>
+    </div>
+    <div class="field"><label>Type</label><div class="seg" id="fVeg"><button type="button" class="${it.veg?'on':''}" data-v="1" onclick="segPick(this)">🟢 Veg</button><button type="button" class="${it.veg?'':'on'}" data-v="0" onclick="segPick(this)">🔴 Non-Veg</button></div></div>
+    <label class="check"><input type="checkbox" id="fTrack" ${it.track?'checked':''} onchange="$('#trackBox').classList.toggle('hidden',!this.checked)"> Track stock for this item</label>
+    <div class="grid2 ${it.track?'':'hidden'}" id="trackBox">
+      <div class="field"><label>Current stock</label><input class="input" id="fStock" type="number" min="0" value="${it.stock}"></div>
+      <div class="field"><label>Low stock alert at</label><input class="input" id="fLow" type="number" min="0" value="${it.low}"></div>
+    </div>
+    <label class="check"><input type="checkbox" id="fActive" ${it.active?'checked':''}> Available for billing</label>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveItem('${id||''}')">${I('check',16)} Save Item</button>`);
+  drawImgPick();
+}
+function segPick(b){b.parentElement.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))}
+function drawImgPick(){
+  $('#imgPick').innerHTML=tmpImg?`<img src="${tmpImg}">`:`${I('image',32)}<b>Upload food photo</b><small>Tap to choose from gallery or camera</small>`;
+  $('#imgRm').classList.toggle('hidden',!tmpImg);
+}
+function pickImg(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{const im=new Image();im.onload=()=>{
+    const M=480,s=Math.min(1,M/Math.max(im.width,im.height)),c=document.createElement('canvas');
+    c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);
+    const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+    tmpImg=c.toDataURL('image/jpeg',.78);drawImgPick();
+  };im.onerror=()=>toast('Could not read this image','err');im.src=r.result};
+  r.readAsDataURL(f);
+}
+function saveItem(id){
+  const name=$('#fName').value.trim(),price=parseFloat($('#fPrice').value),code=$('#fCode').value.trim();
+  if(!name)return toast('Enter food name','err');
+  if(!(price>=0)||$('#fPrice').value==='')return toast('Enter a valid price','err');
+  if(code&&S.items.some(i=>i.code===code&&i.id!==id))return toast(`Code ${code} is already used`,'err');
+  const data={name,code,price:r2(price),cat:$('#fCat').value,veg:$('#fVeg .on').dataset.v==='1',track:$('#fTrack').checked,
+    stock:Math.max(0,parseInt($('#fStock').value)||0),low:Math.max(0,parseInt($('#fLow').value)||0),active:$('#fActive').checked,img:tmpImg};
+  if(id){const it=S.items.find(x=>x.id===id);
+    if(it.track&&data.track&&it.stock!==data.stock)logInv(it.name,data.stock-it.stock,'Edited in menu');
+    if(it.price!==data.price)act(`Changed price of ${it.name}: ${money(it.price)} → ${money(data.price)}`);
+    Object.assign(it,data)}
+  else{S.items.push({id:uid(),...data});act(`Added menu item ${name} (${money(data.price)})`)}
+  if(!DB.set('items',S.items))return;
+  closeModal();toast(id?'Item updated':'Item added','ok');renderShell();drawMenuGrid();
+}
+function delItem(id){const it=S.items.find(x=>x.id===id);confirmDlg('Delete item?',`<b>${esc(it.name)}</b> will be removed from the menu. Old bills are not affected.`,()=>{S.items=S.items.filter(x=>x.id!==id);cart=cart.filter(c=>c.id!==id);saveCart();save('items');act(`Deleted menu item ${it.name}`);toast('Item deleted','ok');drawMenuGrid()})}
+function priceModal(){
+  openModal('Bulk price update',`<p class="muted" style="font-size:13px;margin-bottom:14px">Increase or decrease prices for a whole category at once (e.g. +10% on Biryani).</p>
+    <div class="field"><label>Category</label><select class="input" id="bpCat"><option value="all">All items</option>${S.categories.map(c=>`<option value="${c.id}">${c.emoji} ${esc(c.name)}</option>`).join('')}</select></div>
+    <div class="grid2"><div class="field"><label>Change</label><input class="input" id="bpVal" type="number" step="any" placeholder="e.g. 10 or -5" autofocus></div>
+    <div class="field"><label>Type</label><select class="input" id="bpType"><option value="%">Percent (%)</option><option value="₹">Rupees (₹)</option></select></div></div>
+    <label class="check"><input type="checkbox" id="bpRound" checked> Round to nearest ₹5</label>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="applyBulk()">Apply</button>`,{sm:true});
+}
+function applyBulk(){
+  const v=parseFloat($('#bpVal').value),cat=$('#bpCat').value,t=$('#bpType').value,rnd=$('#bpRound').checked;
+  if(!v)return toast('Enter a value','err');
+  const list=S.items.filter(i=>cat==='all'||i.cat===cat);
+  list.forEach(i=>{let p=t==='%'?i.price*(1+v/100):i.price+v;if(rnd)p=Math.round(p/5)*5;i.price=Math.max(0,r2(p))});
+  save('items');act(`Bulk price change ${v>0?'+':''}${v}${t} on ${cat==='all'?'all items':catOf(cat).name} (${list.length} items)`);
+  closeModal();toast(`${list.length} prices updated`,'ok');PAGES.menu();
+}
+function renderCatList(){
+  $('#menuBody').innerHTML=S.categories.length?`<div class="card p0">${tbl([['Category'],['Items','r'],['Actions','r']],
+    S.categories.map((c,i)=>`<tr><td><div style="display:flex;align-items:center;gap:12px"><div class="rank" style="font-size:18px;width:38px;height:38px;background:var(--primary-50)">${c.emoji}</div><b>${esc(c.name)}</b></div></td><td class="r">${S.items.filter(x=>x.cat===c.id).length}</td>
+    <td><div class="acts"><button class="icon-btn sm" title="Move up" onclick="moveCat(${i},-1)" ${i?'':'disabled'}>↑</button><button class="icon-btn sm" title="Move down" onclick="moveCat(${i},1)" ${i<S.categories.length-1?'':'disabled'}>↓</button><button class="icon-btn sm" onclick="catModal('${c.id}')">${I('edit',16)}</button><button class="icon-btn sm danger" onclick="delCat('${c.id}')">${I('trash',16)}</button></div></td></tr>`).join(''))}</div>`
+    :`<div class="card empty">${I('layers',40)}<p>No categories</p></div>`;
+}
+function moveCat(i,d){const a=S.categories;[a[i],a[i+d]]=[a[i+d],a[i]];save('categories');renderCatList()}
+const EMOJIS=['🍳','🍛','🍲','🍜','🥘','🍗','🍖','🐟','🦐','🥗','🫓','🍞','🥪','🍔','🍕','🍟','🌯','☕','🍵','🥤','🧃','🍨','🍰','🍮','🍩','🥟','🍚','🌶️'];
+function catModal(id){
+  const c=id?catOf(id):{name:'',emoji:'🍽️'};tmpEmoji=c.emoji;
+  openModal(id?'Edit Category':'Add Category',`
+    <div class="field"><label>Category name *</label><input class="input" id="cName" value="${esc(c.name)}" placeholder="e.g. Tandoori" autofocus></div>
+    <div class="field"><label>Icon</label><div class="emoji-row">${EMOJIS.map(e=>`<button type="button" class="${e===tmpEmoji?'on':''}" onclick="tmpEmoji='${e}';this.parentElement.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===this))">${e}</button>`).join('')}</div></div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveCat('${id||''}')">Save</button>`,{sm:true});
+}
+function saveCat(id){
+  const name=$('#cName').value.trim();if(!name)return toast('Enter category name','err');
+  if(S.categories.some(c=>c.name.toLowerCase()===name.toLowerCase()&&c.id!==id))return toast('Category already exists','err');
+  if(id)Object.assign(catOf(id),{name,emoji:tmpEmoji});else S.categories.push({id:uid(),name,emoji:tmpEmoji});
+  save('categories');closeModal();toast('Category saved','ok');if(cur==='menu')PAGES.menu();
+}
+function delCat(id){
+  const n=S.items.filter(x=>x.cat===id).length;
+  if(n)return toast(`Move or delete the ${n} items in this category first`,'err');
+  confirmDlg('Delete category?','This category will be removed.',()=>{S.categories=S.categories.filter(c=>c.id!==id);if(P.cat===id)P.cat='all';save('categories');PAGES.menu()});
+}
+
+/* =========================================================
+   INVENTORY
+========================================================= */
+let IV={tab:'menu'};
+function logInv(name,change,note){S.invlog.unshift({t:Date.now(),name,change,note,by:me()?.name||''});S.invlog=S.invlog.slice(0,500);save('invlog')}
+PAGES.inventory=function(){
+  const tracked=S.items.filter(i=>i.track),li=lowItems(),lm=lowMats();
+  $('#view').innerHTML=`
+  <div class="page-head"><div><h2>Inventory</h2><p>Track menu stock and raw materials · sold items are deducted automatically</p></div>
+    <div class="actions">${IV.tab==='raw'?`<button class="btn btn-primary" onclick="matModal()">${I('plus',16)} Add Material</button>`:''}</div></div>
+  <div class="kpis">
+    ${kpi('Tracked Items',tracked.length,'Menu items with stock','','box','blue')}
+    ${kpi('Low / Out of stock',li.length,li.filter(i=>i.stock<=0).length+' sold out',li.length?'down':'','alert',li.length?'red':'slate')}
+    ${kpi('Raw Materials',S.materials.length,'Ingredients tracked','','layers','violet')}
+    ${kpi('Materials Low',lm.length,lm.length?'Reorder soon':'All good',lm.length?'down':'','alert',lm.length?'red':'green')}
+  </div>
+  <div class="tabs">${[['menu','Menu Stock'],['raw','Raw Materials'],['log','Stock History']].map(([k,l])=>`<button class="${IV.tab===k?'on':''}" onclick="IV.tab='${k}';PAGES.inventory()">${l}</button>`).join('')}</div>
+  <div class="card p0" id="invBody"></div>`;
+  const B=$('#invBody');
+  const st=(q,low)=>q<=0?'<span class="badge red">Out of stock</span>':q<=low?'<span class="badge amber">Low stock</span>':'<span class="badge green">In stock</span>';
+  if(IV.tab==='menu'){
+    B.innerHTML=tbl([['Item'],['Category'],['Track'],['Stock','r'],['Alert at','r'],['Status'],['Update','r']],
+    S.items.map(i=>`<tr><td><div style="display:flex;align-items:center;gap:10px"><div class="mini-thumb" style="width:34px;height:34px">${thumb(i)}</div><b>${esc(i.name)}</b></div></td><td>${esc(catOf(i.cat)?.name||'—')}</td>
+      <td><label class="switch"><input type="checkbox" ${i.track?'checked':''} onchange="toggleTrack('${i.id}',this.checked)"><span></span></label></td>
+      <td class="r"><b>${i.track?i.stock:'—'}</b></td><td class="r">${i.track?i.low:'—'}</td><td>${i.track?st(i.stock,i.low):'<span class="badge">Not tracked</span>'}</td>
+      <td class="r">${i.track?`<button class="btn btn-ghost btn-sm" onclick="stockModal('item','${i.id}')">${I('plus',14)} Stock</button>`:''}</td></tr>`).join(''));
+  }else if(IV.tab==='raw'){
+    B.innerHTML=S.materials.length?tbl([['Material'],['Quantity','r'],['Min level','r'],['Status'],['Actions','r']],
+    S.materials.map(m=>`<tr><td><b>${esc(m.name)}</b></td><td class="r"><b>${r2(m.qty)}</b> ${esc(m.unit)}</td><td class="r">${m.min} ${esc(m.unit)}</td><td>${st(m.qty,m.min)}</td>
+    <td><div class="acts"><button class="btn btn-ghost btn-sm" onclick="stockModal('mat','${m.id}')">In / Out</button><button class="icon-btn sm" onclick="matModal('${m.id}')">${I('edit',16)}</button><button class="icon-btn sm danger" onclick="delMat('${m.id}')">${I('trash',16)}</button></div></td></tr>`).join(''))
+    :`<div class="empty">${I('layers',40)}<p>No raw materials</p><small>Add rice, oil, vegetables, etc.</small></div>`;
+  }else{
+    B.innerHTML=S.invlog.length?tbl([['Date &amp; Time'],['Item'],['Change','r'],['Note'],['By']],
+    S.invlog.slice(0,200).map(l=>`<tr><td>${fmtDT(l.t)}</td><td><b>${esc(l.name)}</b></td><td class="r"><span class="badge ${l.change>=0?'green':'red'}">${l.change>=0?'+':''}${r2(l.change)}</span></td><td>${esc(l.note)}</td><td>${esc(l.by)}</td></tr>`).join(''))
+    :`<div class="empty">${I('clock',40)}<p>No stock movements yet</p></div>`;
+  }
+};
+function toggleTrack(id,v){const i=S.items.find(x=>x.id===id);i.track=v;save('items');renderShell();PAGES.inventory()}
+function stockModal(kind,id){
+  const o=kind==='item'?S.items.find(x=>x.id===id):S.materials.find(x=>x.id===id),cur0=kind==='item'?o.stock:o.qty,unit=kind==='item'?'pcs':o.unit;
+  openModal(`Update stock — ${esc(o.name)}`,`
+    <div class="card" style="box-shadow:none;background:var(--surface2);margin-bottom:16px;display:flex;justify-content:space-between;align-items:center"><span class="muted">Current stock</span><b style="font-size:22px">${r2(cur0)} <small class="muted" style="font-size:13px">${esc(unit)}</small></b></div>
+    <div class="field"><label>Action</label><div class="seg" id="sMode"><button type="button" class="on" data-v="in" onclick="segPick(this)">+ Stock In</button><button type="button" data-v="out" onclick="segPick(this)">− Stock Out</button><button type="button" data-v="set" onclick="segPick(this)">Set exact</button></div></div>
+    <div class="field"><label>Quantity (${esc(unit)})</label><input class="input" id="sQty" type="number" min="0" step="any" inputmode="decimal" autofocus></div>
+    <div class="field"><label>Note</label><input class="input" id="sNote" placeholder="e.g. Purchase, wastage, prepared today"></div>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="applyStock('${kind}','${id}')">Update</button>`,{sm:true});
+}
+function applyStock(kind,id){
+  const o=kind==='item'?S.items.find(x=>x.id===id):S.materials.find(x=>x.id===id),key=kind==='item'?'stock':'qty';
+  const q=parseFloat($('#sQty').value),mode=$('#sMode .on').dataset.v;
+  if(!(q>=0))return toast('Enter quantity','err');
+  const before=o[key];let after=mode==='in'?before+q:mode==='out'?before-q:q;
+  if(after<0)return toast('Stock cannot go below 0','err');
+  if(kind==='item')after=Math.round(after);
+  o[key]=r2(after);save(kind==='item'?'items':'materials');
+  logInv(o.name,o[key]-before,$('#sNote').value.trim()||({in:'Stock in',out:'Stock out',set:'Stock set'}[mode]));
+  closeModal();toast('Stock updated','ok');renderShell();PAGES.inventory();
+}
+function matModal(id){
+  const m=id?S.materials.find(x=>x.id===id):{name:'',unit:'kg',qty:0,min:5};
+  openModal(id?'Edit Material':'Add Raw Material',`
+    <div class="field"><label>Name *</label><input class="input" id="mName" value="${esc(m.name)}" placeholder="e.g. Basmati Rice" autofocus></div>
+    <div class="grid2"><div class="field"><label>Unit</label><select class="input" id="mUnit">${['kg','g','L','ml','pcs','packet','box','dozen','cylinder'].map(u=>`<option ${m.unit===u?'selected':''}>${u}</option>`).join('')}</select></div>
+    <div class="field"><label>Min level (alert)</label><input class="input" id="mMin" type="number" min="0" step="any" value="${m.min}"></div></div>
+    ${id?'':`<div class="field"><label>Opening quantity</label><input class="input" id="mQty" type="number" min="0" step="any" value="0"></div>`}`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveMat('${id||''}')">Save</button>`,{sm:true});
+}
+function saveMat(id){
+  const name=$('#mName').value.trim();if(!name)return toast('Enter name','err');
+  const d={name,unit:$('#mUnit').value,min:Math.max(0,parseFloat($('#mMin').value)||0)};
+  if(id)Object.assign(S.materials.find(x=>x.id===id),d);
+  else{const qty=Math.max(0,parseFloat($('#mQty').value)||0);S.materials.push({id:uid(),...d,qty});if(qty)logInv(name,qty,'Opening stock')}
+  save('materials');closeModal();toast('Saved','ok');renderShell();PAGES.inventory();
+}
+function delMat(id){const m=S.materials.find(x=>x.id===id);confirmDlg('Delete material?',`<b>${esc(m.name)}</b> will be removed.`,()=>{S.materials=S.materials.filter(x=>x.id!==id);save('materials');renderShell();PAGES.inventory()})}
+
+/* =========================================================
+   STAFF & ROLES
+========================================================= */
+let SF={tab:'team'};
+PAGES.staff=function(){
+  const u=me(),today=dkey(Date.now());
+  const todaySales=n=>sum(S.bills.filter(b=>!b.cancelled&&b.staff===n&&dkey(b.t)===today),'total');
+  $('#view').innerHTML=`
+  <div class="page-head"><div><h2>Staff &amp; Roles</h2><p>Add staff, set login PINs and control exactly what each role can do</p></div>
+    <div class="actions"><button class="btn btn-primary" onclick="staffModal()">${I('plus',16)} Add Staff</button></div></div>
+  <div class="tabs">${[['team','Team'],['perms','Role Permissions'],['log','Activity Log']].map(([k,l])=>`<button class="${SF.tab===k?'on':''}" onclick="SF.tab='${k}';PAGES.staff()">${l}</button>`).join('')}</div>
+  <div id="staffBody"></div>`;
+  const B=$('#staffBody');
+  if(SF.tab==='team'){
+    B.innerHTML=`<div class="staff-grid">${S.staff.map(s=>`<div class="card scard" style="${s.active?'':'opacity:.6'}">${avatar(s.name)}
+      <div class="grow" style="min-width:0"><b>${esc(s.name)} ${s.id===u.id?'<span class="muted" style="font-weight:500;font-size:12px">(you)</span>':''}</b>
+      <div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap"><span class="badge ${ROLE_CLS[s.role]}">${s.role}</span>${s.active?'':'<span class="badge red">Inactive</span>'}</div>
+      <small>${s.phone?esc(s.phone)+' · ':''}Today: ${money(todaySales(s.name))}</small></div>
+      <button class="icon-btn sm" onclick="staffModal('${s.id}')">${I('edit',16)}</button>${s.id!==u.id?`<button class="icon-btn sm danger" onclick="delStaff('${s.id}')">${I('trash',16)}</button>`:''}</div>`).join('')}</div>`;
+  }else if(SF.tab==='perms'){
+    B.innerHTML=`<div class="card p0"><div style="padding:16px 20px 0"><p class="muted" style="font-size:12.5px">Tick what each role is allowed to do. Changes apply immediately. Admin always has full access.<br><b>Tip:</b> untick “Settle bills” for Waiters — they can take orders &amp; send KOT, the cashier collects payment.</p></div>
+    <div class="table-wrap" style="margin-top:12px"><table class="table perm-table" style="min-width:560px"><thead><tr><th>Permission</th>${ROLES.map(r=>`<th><span class="badge ${ROLE_CLS[r]}">${r}</span></th>`).join('')}</tr></thead><tbody>
+    ${PERMS.map(([k,l])=>`<tr><td><b style="font-weight:500">${l}</b></td>${ROLES.map(r=>`<td><input type="checkbox" ${r==='Admin'||S.perms[r][k]?'checked':''} ${r==='Admin'?'disabled':''} onchange="setPerm('${r}','${k}',this.checked)"></td>`).join('')}</tr>`).join('')}
+    </tbody></table></div></div>`;
+  }else{
+    B.innerHTML=`<div class="card p0">${S.activity.length?tbl([['Time'],['Staff'],['Activity']],S.activity.slice(0,300).map(a=>`<tr><td style="white-space:nowrap">${fmtDT(a.t)}</td><td><b>${esc(a.by)}</b> ${a.role?`<span class="badge ${ROLE_CLS[a.role]||''}">${a.role}</span>`:''}</td><td>${esc(a.msg)}</td></tr>`).join('')):`<div class="empty">${I('history',40)}<p>No activity yet</p></div>`}</div>`;
+  }
+};
+function setPerm(r,k,v){S.perms[r][k]=v?1:0;save('perms');act(`${v?'Allowed':'Removed'} "${PERMS.find(p=>p[0]===k)[1]}" for ${r}`);toast(`${r}: permission updated`,'ok')}
+function staffModal(id){
+  const s=id?S.staff.find(x=>x.id===id):{name:'',role:'Cashier',pin:'',phone:'',active:true};
+  openModal(id?'Edit Staff':'Add Staff',`
+    <div class="field"><label>Full name *</label><input class="input" id="stName" value="${esc(s.name)}" autofocus></div>
+    <div class="grid2"><div class="field"><label>Role *</label><select class="input" id="stRole">${ROLES.map(r=>`<option ${s.role===r?'selected':''}>${r}</option>`).join('')}</select></div>
+    <div class="field"><label>Phone</label><input class="input" id="stPhone" inputmode="tel" value="${esc(s.phone)}"></div></div>
+    <div class="field"><label>4-digit login PIN *</label><input class="input" id="stPin" inputmode="numeric" maxlength="4" value="${esc(s.pin)}" placeholder="••••"><small>Each staff member needs a unique PIN</small></div>
+    <label class="check"><input type="checkbox" id="stActive" ${s.active?'checked':''}> Active (can log in)</label>`,
+    `<button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveStaff('${id||''}')">Save</button>`,{sm:true});
+}
+function saveStaff(id){
+  const d={name:$('#stName').value.trim(),role:$('#stRole').value,phone:$('#stPhone').value.trim(),pin:$('#stPin').value.trim(),active:$('#stActive').checked};
+  if(!d.name)return toast('Enter name','err');
+  if(!/^\d{4}$/.test(d.pin))return toast('PIN must be exactly 4 digits','err');
+  if(S.staff.some(s=>s.pin===d.pin&&s.id!==id))return toast('PIN already used by another staff','err');
+  if(!S.staff.some(s=>s.role==='Admin'&&s.active&&s.id!==id)&&(d.role!=='Admin'||!d.active))return toast('At least one active Admin is required','err');
+  if(id)Object.assign(S.staff.find(x=>x.id===id),d);else S.staff.push({id:uid(),...d});
+  act(`${id?'Updated':'Added'} staff ${d.name} (${d.role})`);
+  save('staff');closeModal();toast('Staff saved','ok');
+  if(!me())return logout();
+  renderShell();if(!can('staff'))return go(NAV.find(n=>can(n.perm))?.id||'pos');PAGES.staff();
+}
+function delStaff(id){
+  const s=S.staff.find(x=>x.id===id);
+  if(s.role==='Admin'&&S.staff.filter(x=>x.role==='Admin'&&x.active).length<=1)return toast('Cannot delete the only Admin','err');
+  confirmDlg('Remove staff?',`<b>${esc(s.name)}</b> will no longer be able to log in. Their old bills are kept.`,()=>{S.staff=S.staff.filter(x=>x.id!==id);save('staff');act(`Removed staff ${s.name}`);PAGES.staff()});
+}
+
+/* =========================================================
+   SETTINGS
+========================================================= */
+PAGES.settings=function(){
+  const s=S.settings;
+  let used=0;for(let k in localStorage)if(k.startsWith(LS))used+=(localStorage.getItem(k)||'').length*2;
+  const mb=used/1048576,pct=Math.min(100,mb/5*100);
+  const chk=(id,v,l,sub='')=>`<label class="check"><input type="checkbox" id="${id}" ${v?'checked':''}><span>${l}${sub?`<br><small class="muted" style="font-weight:400">${sub}</small>`:''}</span></label>`;
+  $('#view').innerHTML=`
+  <div class="page-head"><div><h2>Settings</h2><p>Hotel details, tax, charges, printer, UPI and data backup</p></div>
+    <div class="actions"><button class="btn btn-primary" onclick="saveSettings()">${I('check',16)} Save Changes</button></div></div>
+  <div class="dash-grid" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+    <div class="card"><div class="card-h"><h3>Hotel Details</h3><span class="muted">Printed on the bill</span></div>
+      <div class="field"><label>Hotel / Restaurant name</label><input class="input" id="sName" value="${esc(s.name)}"></div>
+      <div class="field"><label>Address</label><textarea class="input" id="sAddr" rows="2">${esc(s.address)}</textarea></div>
+      <div class="grid2"><div class="field"><label>Phone</label><input class="input" id="sPhone" value="${esc(s.phone)}"></div>
+      <div class="field"><label>GSTIN</label><input class="input" id="sGstin" value="${esc(s.gstin)}" placeholder="Optional"></div></div>
+      <div class="field"><label>Bill footer message</label><input class="input" id="sFooter" value="${esc(s.footer)}"></div>
+    </div>
+    <div class="card"><div class="card-h"><h3>Tax &amp; Charges</h3></div>
+      <div class="grid2"><div class="field"><label>GST %</label><select class="input" id="sGst">${[0,5,12,18].map(g=>`<option value="${g}" ${+s.gst===g?'selected':''}>${g===0?'No GST':g+'%'}</option>`).join('')}</select><small>Printed as CGST + SGST</small></div>
+      <div class="field"><label>Number of tables</label><input class="input" id="sTables" type="number" min="0" max="200" value="${s.tables}"></div></div>
+      <div class="grid2"><div class="field"><label>Service charge % (Dine-in)</label><input class="input" id="sSvc" type="number" min="0" step="any" value="${s.svc}"></div>
+      <div class="field"><label>Packing charge ₹ (Parcel)</label><input class="input" id="sPack" type="number" min="0" step="any" value="${s.pack}"></div></div>
+      <div class="grid2"><div class="field"><label>Bill number prefix</label><input class="input" id="sPrefix" value="${esc(s.prefix)}"></div>
+      <div class="field"><label>Next bill number</label><input class="input" id="sNext" type="number" min="1" value="${s.next}"></div></div>
+    </div>
+    <div class="card"><div class="card-h"><h3>Printer &amp; KOT</h3></div>
+      <div class="field"><label>Bill paper size</label><select class="input" id="sPaper"><option value="80" ${s.paper==='80'?'selected':''}>3 inch (80 mm) — recommended</option><option value="58" ${s.paper==='58'?'selected':''}>2 inch (58 mm)</option></select></div>
+      ${chk('sKot',s.kotOnHold,'Print KOT automatically when holding an order','Only new items are sent to the kitchen')}
+      ${chk('sNotes',s.notesOnBill,'Show item notes on customer bill')}
+      <button class="btn btn-ghost" onclick="testPrint()">${I('printer',16)} Test Print</button>
+      <p class="muted" style="font-size:12px;margin-top:12px;line-height:1.6">In the print dialog choose your thermal printer, set <b>Margins: None</b> and turn off <b>Headers and footers</b>. Tick “Silent printing” in your browser/kiosk setup for one-tap printing.</p>
+    </div>
+    <div class="card"><div class="card-h"><h3>UPI Payments</h3><span class="badge violet">${I('qr',12)} QR</span></div>
+      <div class="field"><label>UPI ID</label><input class="input" id="sUpi" value="${esc(s.upiId)}" placeholder="e.g. hotelname@okaxis"></div>
+      <div class="field"><label>Payee name</label><input class="input" id="sUpiName" value="${esc(s.upiName)}" placeholder="${esc(s.name)}"></div>
+      ${chk('sQr',s.qrOnBill,'Print UPI QR on bill','On draft bills and UPI bills, with the exact amount')}
+      <button class="btn btn-ghost" onclick="S.settings.upiId=$('#sUpi').value.trim();S.settings.upiName=$('#sUpiName').value.trim();showQR(1,'Test')">${I('qr',16)} Preview QR (₹1)</button>
+    </div>
+    <div class="card"><div class="card-h"><h3>Backup &amp; Restore</h3></div>
+      <p class="muted" style="font-size:13px;margin-bottom:12px">Data is stored in this browser on this device. Download a backup every day.</p>
+      <div style="display:flex;justify-content:space-between;font-size:12.5px"><span class="muted">Storage used</span><b>${mb.toFixed(2)} MB of ~5 MB</b></div>
+      <div class="prog" style="margin-bottom:16px"><i style="width:${pct}%;background:${pct>80?'var(--red)':'var(--green)'}"></i></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-dark" onclick="backup()">${I('download',16)} Download Backup</button>
+      <button class="btn btn-ghost" onclick="$('#restoreFile').click()">${I('upload',16)} Restore</button><input type="file" id="restoreFile" accept=".json" hidden onchange="restore(this)"></div>
+    </div>
+    <div class="card" style="border-color:rgba(220,38,38,.35)"><div class="card-h"><h3 style="color:var(--red)">Danger Zone</h3></div>
+      <p class="muted" style="font-size:13px;margin-bottom:12px">Delete only sales history, or reset everything back to the starting demo data.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-ghost" style="color:var(--red)" onclick="clearBills()">Clear all bills</button><button class="btn btn-danger" onclick="resetAll()">Reset everything</button></div>
+    </div>
+  </div>`;
+};
+function saveSettings(){
+  const name=$('#sName').value.trim();if(!name)return toast('Hotel name is required','err');
+  Object.assign(S.settings,{name,address:$('#sAddr').value.trim(),phone:$('#sPhone').value.trim(),gstin:$('#sGstin').value.trim(),footer:$('#sFooter').value.trim(),
+    gst:+$('#sGst').value,paper:$('#sPaper').value,prefix:$('#sPrefix').value.trim(),next:Math.max(1,parseInt($('#sNext').value)||1),
+    tables:Math.min(200,Math.max(0,parseInt($('#sTables').value)||0)),svc:Math.max(0,+$('#sSvc').value||0),pack:Math.max(0,+$('#sPack').value||0),
+    kotOnHold:$('#sKot').checked,notesOnBill:$('#sNotes').checked,upiId:$('#sUpi').value.trim(),upiName:$('#sUpiName').value.trim(),qrOnBill:$('#sQr').checked});
+  save('settings');act('Updated hotel settings');renderShell();toast('Settings saved','ok');
+}
+function testPrint(){const g=+S.settings.gst||0,tax=r2(180*g/100);printBill({no:'TEST-001',t:Date.now(),items:[{name:'Masala Dosa',price:70,qty:2},{name:'Filter Coffee',price:20,qty:2}],sub:180,disc:0,gst:g,tax,round:r2(Math.round(180+tax)-(180+tax)),total:Math.round(180+tax),pay:'UPI',type:'Dine-in',table:'5',cust:'',phone:'',staff:me().name})}
+function backup(){download(`hotel-backup-${dkey(Date.now())}.json`,JSON.stringify({app:'hotelpos',v:2,at:Date.now(),data:S}),'application/json');act('Downloaded backup')}
+function restore(inp){
+  const f=inp.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const j=JSON.parse(String(r.result).replace(/^﻿/,''));if(j.app!=='hotelpos'||!j.data?.settings)throw 0;
+    confirmDlg('Restore backup?',`Backup from <b>${fmtDT(j.at)}</b>. All current data on this device will be replaced.`,()=>{KEYS.forEach(k=>{if(j.data[k])DB.set(k,j.data[k])});location.reload()},'Restore',false)}
+    catch(e){toast('Invalid backup file','err')}};
+  r.readAsText(f);
+}
+function clearBills(){confirmDlg('Clear all bills?','Every bill and sales report will be permanently deleted. Download a backup first.',()=>{S.bills=[];save('bills');act('Cleared all bills');toast('All bills cleared','ok')},'Delete all bills')}
+function resetAll(){confirmDlg('Reset everything?','All menu items, photos, staff, stock, customers, expenses and bills will be erased and replaced with demo data.',()=>{Object.keys(localStorage).filter(k=>k.startsWith(LS)&&k!==LS+'theme').forEach(k=>localStorage.removeItem(k));sessionStorage.clear();location.reload()},'Reset')}
+
+/* =========================================================
+   Boot
+========================================================= */
+window.addEventListener('afterprint',()=>{$('#printArea').innerHTML=''});
+load();applyTheme();
+if(me())startApp();else renderLogin();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js');
+</script>
+</body>
+</html>
