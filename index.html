@@ -794,11 +794,11 @@ function pinKey(k){
   renderLogin();
   if(pinBuf.length===4){
     const u=S.staff.find(s=>s.id===loginSel);
-    if(u&&u.pin===pinBuf){sessionStorage.setItem(LS+'user',u.id);pinBuf='';act('Logged in');startApp()}
+    if(u&&u.pin===pinBuf){sessionStorage.setItem(LS+'user',u.id);sessionStorage.removeItem(LS+'eodIgnore');pinBuf='';act('Logged in');startApp();setTimeout(eodLoginCheck,300)}
     else{setTimeout(()=>{$('#pinDots')?.classList.add('shake');toast('Wrong PIN','err');setTimeout(()=>{pinBuf='';renderLogin()},400)},120)}
   }
 }
-function logout(){act('Logged out');sessionStorage.removeItem(LS+'user');sessionStorage.removeItem(LS+'page');$('#appView').classList.add('hidden');$('#loginView').classList.remove('hidden');closeModal();renderLogin()}
+function logout(){act('Logged out');sessionStorage.removeItem(LS+'user');sessionStorage.removeItem(LS+'eodIgnore');sessionStorage.removeItem(LS+'page');$('#appView').classList.add('hidden');$('#loginView').classList.remove('hidden');closeModal();renderLogin()}
 
 /* =========================================================
    Shell / navigation
@@ -1153,7 +1153,7 @@ function saveBill(print){
   const recv=modeKind(P.pay)==='cash'&&parseFloat(P.recv)>=t.total?r2(parseFloat(P.recv)):0;
   const o=P.orderId&&S.orders.find(x=>x.id===P.orderId);
   // Business-day rule (enforced in the data layer, for every role): no bill without an OPEN, un-overdue day.
-  const day=dayForNewBill();if(!day)return;
+  const day=dayForNewBill(()=>saveBill(print));if(!day)return;
   const bill={id:uid(),no:S.settings.prefix+S.settings.next,t:Date.now(),dayId:day.id,bday:day.date,
     items:lines.map(l=>({id:l.id,name:l.name,price:l.price,qty:l.qty,cat:l.cat,note:l.note})),
     ...t,pay:P.pay,split,recv,change:recv?r2(recv-t.total):0,type:P.type,table:P.type==='Dine-in'?P.table.trim():'',cust:P.cust.trim(),phone:P.phone.trim(),staff:u.name,staffId:u.id,orderStaff:o?.staff||''};
@@ -1780,8 +1780,34 @@ function dayCutoff(d){const h=+S.settings.eodCutoff;if(!(h>=0))return Infinity;c
 function billingGate(){
   syncDays();const o=openDays();
   if(o.length>1)return {ok:false,code:'multi',day:o.sort((a,b)=>a.start-b.start)[0]};
-  if(o.length===1)return Date.now()>=dayCutoff(o[0])?{ok:false,code:'unclosed',day:o[0]}:{ok:true,day:o[0]};
+  if(o.length===1){
+    if(Date.now()<dayCutoff(o[0]))return {ok:true,day:o[0]};
+    // "Ignore" = keep billing into the same (overdue) day for this login only; the alert returns on next login.
+    if(sessionStorage.getItem(LS+'eodIgnore')===o[0].id)return {ok:true,day:o[0],ignored:true};
+    return {ok:false,code:'unclosed',day:o[0]};
+  }
   return {ok:true,day:null};
+}
+let blockRetry=null;
+function ignoreDay(id){
+  sessionStorage.setItem(LS+'eodIgnore',id);act('Ignored End of Day alert — continuing in the same business day');
+  closeModal();toast('Continuing in the same business day','ok');
+  const r=blockRetry;blockRetry=null;if(r)r();else if(cur==='pos')renderCart();else go(cur);
+}
+// "New" = close the overdue day (report saved) and open a fresh business day from ₹0.
+function newDayFromBlocked(id){
+  if(!can('eod'))return toast('Only Admin can start a new day — ask Admin, or tap Ignore','err');
+  const r=closeBusinessDay(id);
+  if(!r.ok&&!/already closed/.test(r.msg))return toast(r.msg,'err');
+  sessionStorage.removeItem(LS+'eodIgnore');
+  const d=openNewDay();closeModal();
+  if(!d)return toast('Could not start a new business day — please try again','err');
+  toast(`Previous day closed · new business day started (${fmtD(d.start)})`,'ok');
+  const rt=blockRetry;blockRetry=null;if(rt)rt();else if(cur==='pos')renderCart();else go(cur);
+}
+function eodLoginCheck(){
+  if(!can('settle')&&!can('eod'))return;
+  const g=billingGate();if(!g.ok&&g.code==='unclosed')dayBlocked(g);
 }
 function openNewDay(){
   syncDays();if(openDays().length)return null;          // never create a second OPEN day
@@ -1793,21 +1819,24 @@ function openNewDay(){
   return d;
 }
 // The single entry point every new bill goes through.
-function dayForNewBill(){
+function dayForNewBill(retry){
   const g=billingGate();
-  if(!g.ok){dayBlocked(g);return null}
+  if(!g.ok){dayBlocked(g,retry);return null}
   const d=g.day||openNewDay();
   if(!d){toast('Could not start a new business day — please try again','err');return null}
   return d;
 }
-function dayBlocked(g){
-  const d=g.day,multi=g.code==='multi';
-  openModal(`<span style="color:var(--red);display:flex;align-items:center;gap:8px">${I('alert',20)} ${multi?'Business Day Error':DAY_ERR}</span>`,
-    multi?`<p style="line-height:1.6">More than one business day is OPEN. Close the older day in End of Day before billing.</p>`
-    :`<p style="line-height:1.6"><b>You have not completed the End of Day closing process.</b></p><p class="muted" style="line-height:1.6;margin-top:6px">Please close the previous business day before starting new billing.</p>
-      <div class="eod-warn red">${I('cal',16)}<span>Business day <b>${fmtD(d.start)}</b> (opened ${fmtDT(d.start)} by ${esc(d.openedBy)}) is still <b>OPEN</b>.</span></div>
-      ${can('eod')?'':`<p class="muted" style="font-size:12.5px;margin-top:12px">Ask the Admin to complete End of Day closing.</p>`}`,
+function dayBlocked(g,retry){
+  const d=g.day,multi=g.code==='multi';blockRetry=multi?null:(retry||null);
+  if(multi)return openModal(`<span style="color:var(--red);display:flex;align-items:center;gap:8px">${I('alert',20)} Business Day Error</span>`,
+    `<p style="line-height:1.6">More than one business day is OPEN. Close the older day in End of Day before billing.</p>`,
     `<button class="btn btn-ghost" onclick="closeModal()">Close</button>${can('eod')?`<button class="btn btn-primary" onclick="if(DCF)DCF.tab='close';go('eod')">${I('cal',16)} Go to End of Day Closing</button>`:''}`,{sm:true});
+  openModal(`<span style="color:var(--red);display:flex;align-items:center;gap:8px">${I('alert',20)} ${DAY_ERR}</span>`,
+    `<p style="line-height:1.6"><b>You have not completed the End of Day closing process.</b></p>
+      <div class="eod-warn red">${I('cal',16)}<span>Business day <b>${fmtD(d.start)}</b> (opened ${fmtDT(d.start)} by ${esc(d.openedBy)}) is still <b>OPEN</b> · ${dayBills(d).filter(b=>!b.cancelled).length} bills · ${money(daySummary(d).collection)}</span></div>
+      <div class="list-row" style="margin-top:10px"><div class="rank" style="background:var(--soft)">${I('pause',15)}</div><div class="grow"><b>Ignore</b><small>Keep billing in the same day (${fmtD(d.start)}). This alert shows again on next login.</small></div></div>
+      <div class="list-row"><div class="rank" style="background:var(--primary-50);color:var(--primary)">${I('plus',15)}</div><div class="grow"><b>New Day</b><small>${can('eod')?`Close ${fmtD(d.start)} (report is saved) and start a new business day from ₹0.`:'Only Admin can start a new day.'}</small></div></div>`,
+    `<button class="btn btn-ghost" onclick="ignoreDay('${d.id}')">${I('pause',16)} Ignore</button>${can('eod')?`<button class="btn btn-primary" onclick="newDayFromBlocked('${d.id}')">${I('plus',16)} New Day</button>`:''}`,{sm:true});
 }
 function startDay(){
   const g=billingGate();
@@ -1937,7 +1966,7 @@ function bdayBar(){
   if(d){
     const blocked=!g.ok,n=dayBills(d).filter(b=>!b.cancelled).length;
     return `<div class="card bday ${blocked?'warn':''}"><div class="kpi-ic ${blocked?'red':'green'}">${I('cal',22)}</div>
-      <div class="grow"><h3>Business Day · ${fmtD(d.start)} <span class="badge green">● OPEN</span>${blocked?`<span class="badge red">${g.code==='multi'?'Multiple open days':'Closing overdue · billing locked'}</span>`:''}</h3>
+      <div class="grow"><h3>Business Day · ${fmtD(d.start)} <span class="badge green">● OPEN</span>${blocked?`<span class="badge red">${g.code==='multi'?'Multiple open days':'Closing overdue · billing locked'}</span>`:g.ignored?'<span class="badge amber">Closing overdue · ignored</span>':''}</h3>
       <p>Started ${fmtDT(d.start)} by ${esc(d.openedBy)} · ${n} bill${n===1?'':'s'} · ${blocked?'New bills are blocked until this day is closed.':'Stays open past midnight until End of Day is done.'}</p></div>
       <div class="acts">${can('eod')?`<button class="btn btn-eod" onclick="eodConfirm()">${I('lock',18)} END OF DAY</button>`:''}</div></div>`;
   }
