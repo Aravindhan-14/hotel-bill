@@ -787,8 +787,86 @@ function renderLogin(){
      <div class="pin-dots" id="pinDots">${[0,1,2,3].map(i=>`<i class="${i<pinBuf.length?'f':''}"></i>`).join('')}</div>
      <div class="keypad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button onclick="pinKey('${n}')">${n}</button>`).join('')}<button onclick="pinBuf='';renderLogin()" style="font-size:13px;color:var(--muted)">Clear</button><button onclick="pinKey('0')">0</button><button onclick="pinKey('del')">${I('back',22)}</button></div>
      <p class="muted" style="text-align:center;margin-top:20px;font-size:12px;line-height:1.7">Default PINs — Owner <b>1234</b> · Cashier <b>1111</b> · Waiter <b>2222</b><br>Change them in Staff &amp; Roles</p>
+     ${FBU?`<p class="muted" style="text-align:center;margin-top:10px;font-size:12px">Account: <b>${esc(accName(FBU))}</b> · <a href="#" onclick="accSignOut();return false" style="color:var(--primary);font-weight:600">Sign out</a></p>`:''}
    </div></div></div>`;
 }
+
+/* ---------- Firebase account (username + password) ---------- */
+const firebaseConfig={
+  apiKey:"AIzaSyBle-k9Tw2MTBcF5RiaCWZ8jQXZmLnTFfU",
+  authDomain:"hotel-billing-e50f8.firebaseapp.com",
+  projectId:"hotel-billing-e50f8",
+  storageBucket:"hotel-billing-e50f8.firebasestorage.app",
+  messagingSenderId:"36842974419",
+  appId:"1:36842974419:web:010a8073e3e56fe90ab826",
+  measurementId:"G-KYWCSPC1Q2"
+};
+const FB_V='https://www.gstatic.com/firebasejs/10.12.2/';
+const ACC_DOMAIN='@hotel-billing-e50f8.firebaseapp.com';
+let FB=null,FBU,accMode='in',accBusy=false;
+const accName=u=>u?.displayName||String(u?.email||'').replace(ACC_DOMAIN,'');
+async function fbInit(){
+  try{
+    const [{initializeApp},A]=await Promise.all([import(FB_V+'firebase-app.js'),import(FB_V+'firebase-auth.js')]);
+    const app=initializeApp(firebaseConfig),auth=A.getAuth(app);
+    FB={auth,...A};
+    import(FB_V+'firebase-analytics.js').then(an=>an.isSupported().then(ok=>{if(ok)an.getAnalytics(app)})).catch(()=>{});
+    A.onAuthStateChanged(auth,onFbAuth);
+  }catch(e){renderAccError()}
+}
+function onFbAuth(u){
+  const was=FBU;FBU=u||null;
+  if(!FBU){
+    sessionStorage.removeItem(LS+'user');sessionStorage.removeItem(LS+'eodIgnore');sessionStorage.removeItem(LS+'page');
+    $('#appView').classList.add('hidden');$('#loginView').classList.remove('hidden');closeModal();renderAccount();return;
+  }
+  if(was&&was.uid===FBU.uid&&!$('#accView'))return;
+  if(me())startApp();else renderLogin();
+}
+function accShell(inner){
+  const L=esc(initials(S.settings.name)[0]||'H');
+  $('#loginView').innerHTML=`<div class="login" id="accView">
+   <div class="login-art">
+     <div class="brand" style="padding:0"><div class="logo">${L}</div><div><b>${esc(S.settings.name)}</b><small>Billing &amp; POS</small></div></div>
+     <div><h2>Fast billing for a busy restaurant.</h2><p>Sign in to your hotel account to continue.</p></div>
+     <div></div>
+   </div>
+   <div class="login-form"><div class="login-card">
+     <div class="login-m-brand"><div class="logo">${L}</div><div><b style="font-size:16px">${esc(S.settings.name)}</b><div class="muted" style="font-size:12px">Billing &amp; POS</div></div></div>
+     ${inner}
+   </div></div></div>`;
+}
+function renderAccLoading(){accShell(`<h3>Please wait…</h3><p class="muted" style="margin-top:6px">Checking your account</p>`)}
+function renderAccError(){accShell(`<h3>Can't connect</h3><p class="muted" style="margin-top:6px;line-height:1.6">Internet is needed to sign in to your account. Check the connection and try again.</p><button class="btn btn-primary" style="width:100%;margin-top:20px;height:44px" onclick="location.reload()">Try again</button>`)}
+function renderAccount(){
+  const up=accMode==='up';
+  accShell(`<h3>${up?'Create account':'Sign in'}</h3>
+     <p class="muted" style="margin-top:4px">${up?'Choose a username and password for your hotel':'Enter your username and password'}</p>
+     <div class="seg" style="margin:20px 0 18px"><button type="button" class="${up?'':'on'}" onclick="accMode='in';renderAccount()">Sign in</button><button type="button" class="${up?'on':''}" onclick="accMode='up';renderAccount()">Create account</button></div>
+     <form id="accForm" onsubmit="accSubmit(event)" autocomplete="on">
+       <div class="field"><label>Username</label><input class="input" id="accUser" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="e.g. annapoorna" required></div>
+       <div class="field"><label>Password</label><input class="input" id="accPass" type="password" autocomplete="${up?'new-password':'current-password'}" placeholder="${up?'At least 6 characters':'Password'}" required></div>
+       ${up?`<div class="field"><label>Confirm password</label><input class="input" id="accPass2" type="password" autocomplete="new-password" placeholder="Type the password again" required></div>`:''}
+       <button class="btn btn-primary" id="accBtn" style="width:100%;height:44px;margin-top:4px">${up?'Create account':'Sign in'}</button>
+     </form>
+     <p class="muted" style="text-align:center;margin-top:16px;font-size:12.5px">${up?'Already have an account?':'New here?'} <a href="#" onclick="accMode='${up?'in':'up'}';renderAccount();return false" style="color:var(--primary);font-weight:600">${up?'Sign in':'Create account'}</a></p>`);
+  setTimeout(()=>$('#accUser')?.focus(),50);
+}
+const ACC_ERR={'auth/email-already-in-use':'This username is already taken','auth/invalid-credential':'Wrong username or password','auth/wrong-password':'Wrong username or password','auth/user-not-found':'Wrong username or password','auth/invalid-login-credentials':'Wrong username or password','auth/weak-password':'Password must be at least 6 characters','auth/too-many-requests':'Too many attempts — try again in a few minutes','auth/network-request-failed':'No internet connection','auth/operation-not-allowed':'Username/password sign-in is not enabled in Firebase (Authentication → Sign-in method → Email/Password)','auth/user-disabled':'This account has been disabled'};
+async function accSubmit(e){
+  e.preventDefault();if(accBusy||!FB)return;
+  const up=accMode==='up',user=$('#accUser').value.trim().toLowerCase(),pass=$('#accPass').value;
+  if(!/^[a-z0-9._-]{3,30}$/.test(user))return toast('Username: 3–30 letters/numbers (no spaces)','err');
+  if(pass.length<6)return toast('Password must be at least 6 characters','err');
+  if(up&&pass!==$('#accPass2').value)return toast('Passwords do not match','err');
+  accBusy=true;const b=$('#accBtn');b.disabled=true;b.textContent='Please wait…';
+  try{
+    if(up){const c=await FB.createUserWithEmailAndPassword(FB.auth,user+ACC_DOMAIN,pass);await FB.updateProfile(c.user,{displayName:user});toast('Account created','ok')}
+    else await FB.signInWithEmailAndPassword(FB.auth,user+ACC_DOMAIN,pass);
+  }catch(err){toast(ACC_ERR[err.code]||err.message||'Something went wrong','err');b.disabled=false;b.textContent=up?'Create account':'Sign in'}
+  finally{accBusy=false}
+}
+function accSignOut(){confirmDlg('Sign out of account?','You will need the username and password to sign in again on this device.',()=>{FB&&FB.signOut(FB.auth)},'Sign out')}
 function pinKey(k){
   if(k==='del')pinBuf=pinBuf.slice(0,-1);else if(pinBuf.length<4)pinBuf+=k;
   renderLogin();
@@ -858,6 +936,7 @@ function go(p){
 /* ---------- Keyboard ---------- */
 document.addEventListener('keydown',e=>{
   if(!$('#loginView').classList.contains('hidden')&&$('#loginView').innerHTML){
+    if($('#accView'))return;
     if(/^\d$/.test(e.key))pinKey(e.key);else if(e.key==='Backspace')pinKey('del');return;
   }
   if(e.key==='Escape'){if(modalOpen())closeModal();else{toggleCart(false);toggleSide(false)}return}
@@ -2180,7 +2259,7 @@ function resetAll(){confirmDlg('Reset everything?','All menu items, photos, staf
 ========================================================= */
 window.addEventListener('afterprint',()=>{$('#printArea').innerHTML=''});
 load();applyTheme();
-if(me())startApp();else renderLogin();
+renderAccLoading();fbInit();
 if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js');
 </script>
 </body>
